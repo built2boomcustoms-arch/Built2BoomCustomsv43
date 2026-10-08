@@ -2,7 +2,7 @@
 *{box-sizing:border-box}body{margin:0;background:#0b0d10;color:#f4f4f4;font-family:Arial,Helvetica,sans-serif}.wrap{max-width:1100px;margin:auto;padding:35px 20px 70px}a{color:#fff}.logo{font-weight:900;letter-spacing:1px;margin-bottom:35px}.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:22px}.card{background:#14171b;border:1px solid #292d32;border-radius:16px;padding:24px}h1{font-size:42px;margin:0 0 8px}h2{margin-top:0}.muted,.note{color:#9da3aa;line-height:1.55}.fields{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.field{margin:10px 0}.field.full{grid-column:1/-1}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:7px}.field input,.field select{width:100%;padding:14px;border-radius:10px;border:1px solid #30343a;background:#0d1013;color:#eee;font-size:16px}.line{display:flex;justify-content:space-between;gap:15px;padding:9px 0;border-bottom:1px solid #292d32;color:#c8ccd1}.totals{margin-top:12px}.total{display:flex;justify-content:space-between;font-size:27px;font-weight:900;padding-top:14px}.btn{width:100%;background:#fff;color:#08090a;border:0;border-radius:9px;padding:16px 22px;font-weight:900;cursor:pointer;margin-top:18px;font-size:16px}.btn:disabled{opacity:.5;cursor:not-allowed}.back{display:inline-block;margin-bottom:22px;text-decoration:none;color:#c8ccd1}.error{display:none;background:#3a1616;border:1px solid #743333;color:#ffbcbc;padding:12px;border-radius:10px;margin-top:14px}.loading{opacity:.6;pointer-events:none}.paybox{margin-top:18px;padding:16px;border:1px solid #30343a;border-radius:12px;background:#0d1013}.paybox strong{display:block;margin-bottom:6px}.methods{font-size:14px;color:#c8ccd1;line-height:1.6}.secure{font-size:12px;color:#888;margin-top:12px}.payment-area{display:none;margin-top:18px}.payment-title{font-weight:900;margin-bottom:10px}.payment-help{font-size:13px;color:#9da3aa;margin:10px 0 0}@media(max-width:800px){.grid{grid-template-columns:1fr}.fields{grid-template-columns:1fr}.field.full{grid-column:auto}h1{font-size:34px}}
 </style></head><body><main class="wrap"><div class="logo">BUILT2BOOMCUSTOMS</div><a class="back" href="index.html#builder">← Back to Builder</a><h1>Checkout</h1><p class="muted">Enter your shipping information, review the final total, then continue to secure payment.</p><div class="grid"><section class="card"><h2>Shipping Information</h2><div class="fields">
 <div class="field full"><label for="name">Full Name</label><input id="name" autocomplete="name"></div><div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="email"></div><div class="field"><label for="phone">Phone Number</label><input id="phone" type="tel" autocomplete="tel"></div><div class="field full"><label for="address1">Street Address</label><input id="address1" autocomplete="shipping address-line1"></div><div class="field full"><label for="address2">Apartment, Suite, etc. (optional)</label><input id="address2" autocomplete="shipping address-line2"></div><div class="field"><label for="city">City</label><input id="city" autocomplete="shipping address-level2"></div><div class="field"><label for="state">State</label><input id="state" maxlength="2" placeholder="KS" autocomplete="shipping address-level1"></div><div class="field"><label for="zip">ZIP Code</label><input id="zip" inputmode="numeric" autocomplete="shipping postal-code"></div><div class="field"><label for="country">Country</label><select id="country"><option value="US">United States</option></select></div></div>
-<div class="paybox"><strong>Payment methods</strong><div class="methods">PayPal • Credit / Debit Card • Venmo • Pay Later • Apple Pay / Google Pay when eligible</div><div class="secure">Secure checkout is handled by PayPal. Only payment methods actually available for your device, location, and merchant account will be shown. Built2BoomCustoms does not store card numbers.</div></div><button class="btn" id="pay">VIEW SECURE PAYMENT OPTIONS →</button><div class="payment-area" id="paymentArea"><div class="payment-title">Choose how you want to pay</div><div id="paypal-button-container"></div><div class="payment-help">If a payment method is not shown, PayPal has determined it is not currently eligible for this checkout.</div></div><div class="error" id="error"></div></section>
+<div class="paybox"><strong>Payment methods</strong><div class="methods">PayPal • Credit / Debit Card • Venmo • Pay Later</div><div class="secure">Secure checkout is handled by PayPal. Only payment methods actually available for your device, location, and merchant account will be shown. Built2BoomCustoms does not store card numbers.</div></div><button class="btn" id="pay">VIEW SECURE PAYMENT OPTIONS →</button><div class="payment-area" id="paymentArea"><div class="payment-title">Choose how you want to pay</div><div id="paypal-button-container"></div><div class="payment-help">If a payment method is not shown, PayPal has determined it is not currently eligible for this checkout.</div></div><div class="error" id="error"></div></section>
 <section class="card"><h2>Your Build</h2><div id="build"></div><div class="totals"><div class="line"><span>Build Subtotal</span><span id="subtotal">$0.00</span></div><div class="line"><span>Shipping</span><span id="shipping">$0.00</span></div><div class="total"><span>Total</span><span id="total">$0.00</span></div></div><p class="note">Shipping is currently estimated by case size for U.S. orders. Carrier-calculated rates can be connected later.</p></section></div></main>
 <script>
 const data=JSON.parse(sessionStorage.getItem('b2b_build')||'null');
@@ -15,7 +15,44 @@ function updateTotals(){const sub=Number(data?.total||0),ship=shipCost();documen
 if(!data){buildEl.innerHTML='<p class="muted">No build was found. Go back to the builder and create one.</p>';document.getElementById('pay').disabled=true}else{const labels={case:'Box Size',color:'Color',customColor:'Custom Color',sub:'Subwoofer',subCount:'Subwoofers',subBrand:'Subwoofer Brand',subLocation:'Subwoofer Location',subSize:'Subwoofer Size',count:'Speakers',tweeters:'Extra Tweeters',power:'Power System',otherPower:'Custom Power Brand',brand:'Speaker Brand',size:'Speaker Size',extra:'Extras',customLogoText:'Logo Text',customLogoFont:'Logo Font',customLogoLocation:'Logo Location'};const order=['case','color','customColor','sub','subCount','subBrand','subLocation','subSize','count','tweeters','power','otherPower','brand','size','extra','customLogoText','customLogoFont','customLogoLocation'];buildEl.innerHTML=order.filter(k=>data.selections[k]&&data.selections[k].value!=='').map(k=>`<div class="line"><span>${labels[k]||k}</span><span>${data.selections[k].value}</span></div>`).join('');updateTotals()}
 let savedCustomer=null;
 function showError(message){const err=document.getElementById('error');err.textContent=message;err.style.display='block'}
-function customerFromForm(){const ids=['name','email','phone','address1','city','state','zip'];const vals=Object.fromEntries(ids.map(id=>[id,document.getElementById(id).value.trim()]));if(ids.some(id=>!vals[id]))throw new Error('Please complete all required contact and shipping fields.');return {...vals,address2:document.getElementById('address2').value.trim(),country:'US'}}
+function customerFromForm(){
+  const ids=['name','email','phone','address1','city','state','zip'];
+  const vals={};
+
+  for(const id of ids){
+    const el=document.getElementById(id);
+    el.blur();
+    vals[id]=(el.value||'').trim();
+  }
+
+  const missing=ids.filter(id=>!vals[id]);
+
+  if(missing.length){
+    const labels={
+      name:'Full Name',
+      email:'Email',
+      phone:'Phone Number',
+      address1:'Street Address',
+      city:'City',
+      state:'State',
+      zip:'ZIP Code'
+    };
+
+    const first=document.getElementById(missing[0]);
+    first.focus();
+    first.scrollIntoView({behavior:'smooth',block:'center'});
+
+    throw new Error(
+      'Please complete: '+missing.map(id=>labels[id]).join(', ')+'.'
+    );
+  }
+
+  return {
+    ...vals,
+    address2:(document.getElementById('address2').value||'').trim(),
+    country:'US'
+  };
+}
 async function createOrder(){const r=await fetch('/api/paypal/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer:savedCustomer,build:data})});const out=await r.json();if(!r.ok)throw new Error(out.error||'Unable to start payment.');return out.orderId}
 async function captureOrder(orderID){const r=await fetch('/api/paypal/orders/'+encodeURIComponent(orderID)+'/capture',{method:'POST',headers:{'Content-Type':'application/json'}});const out=await r.json();if(!r.ok)throw new Error(out.error||'Payment capture failed.');return out}
 async function loadPayPal(){const cfgRes=await fetch('/api/paypal/config');const cfg=await cfgRes.json();if(!cfgRes.ok)throw new Error(cfg.error||'Unable to load PayPal.');await new Promise((resolve,reject)=>{if(window.paypal)return resolve();const sc=document.createElement('script');const host=cfg.env==='live'?'https://www.paypal.com':'https://www.sandbox.paypal.com';sc.src=host+'/sdk/js?client-id='+encodeURIComponent(cfg.clientId)+'&currency=USD&intent=capture&components=buttons,funding-eligibility&enable-funding=venmo,paylater';sc.onload=resolve;sc.onerror=()=>reject(new Error('Unable to load secure payment options.'));document.head.appendChild(sc)});}
