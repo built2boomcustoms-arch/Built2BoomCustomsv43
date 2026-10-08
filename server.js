@@ -233,6 +233,7 @@ ${esc(value)}
 
 async function sendOrderEmail(order){
 
+ 
 const apiKey=process.env.RESEND_API_KEY;
 
 if(!apiKey){
@@ -355,6 +356,62 @@ throw new Error(
 
 }
 
+}
+async function sendSupportEmail(data){
+
+  const apiKey = process.env.RESEND_API_KEY;
+  if(!apiKey) throw new Error('RESEND_API_KEY is not configured');
+
+  const name = String(data.name || '').trim();
+  const email = String(data.email || '').trim();
+  const orderNumber = String(data.orderNumber || '').trim();
+  const message = String(data.message || '').trim();
+
+  if(!name || !email || !message){
+    throw new Error('Missing required support information');
+  }
+
+  const html = `
+    <h1>Built2BoomCustoms Support Request</h1>
+
+    <h2>Customer Information</h2>
+
+    <p>
+      <b>Name:</b> ${esc(name)}<br>
+      <b>Email:</b> ${esc(email)}<br>
+      <b>Order Number:</b> ${esc(orderNumber || 'Not provided')}
+    </p>
+
+    <hr>
+
+    <h2>Customer Message</h2>
+
+    <p style="white-space:pre-wrap">${esc(message)}</p>
+  `;
+
+  const r = await fetch('https://api.resend.com/emails',{
+    method:'POST',
+    headers:{
+      'Authorization':`Bearer ${apiKey}`,
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({
+      from:
+        process.env.ORDER_EMAIL_FROM
+        || 'Built2BoomCustoms <onboarding@resend.dev>',
+      to:['built2boomcustoms@gmail.com'],
+      reply_to:email,
+      subject:`Customer Support - ${name}${orderNumber ? ' - Order '+orderNumber : ''}`,
+      html
+    })
+  });
+
+  if(!r.ok){
+    const text = await r.text();
+    throw new Error(`Resend error ${r.status}: ${text}`);
+  }
+
+  return await r.json();
 }
 
 async function emailCapturedOrder(orderID,capture){
@@ -755,6 +812,36 @@ e.message
 
 }
 );
+app.post('/api/support', async (req,res)=>{
+  try{
+    const {name,email,orderNumber,message}=req.body || {};
+
+    if(!name || !email || !message){
+      return res.status(400).json({
+        error:'Please complete your name, email, and message.'
+      });
+    }
+
+    await sendSupportEmail({
+      name,
+      email,
+      orderNumber,
+      message
+    });
+
+    res.json({
+      success:true,
+      message:'Support request sent successfully.'
+    });
+
+  }catch(error){
+    console.error('Support email failed:',error);
+
+    res.status(500).json({
+      error:'Unable to send support request.'
+    });
+  }
+});
 
 app.listen(
 PORT,
