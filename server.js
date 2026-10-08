@@ -162,19 +162,66 @@ return '$'+Number(v||0).toFixed(2);
 
 function buildRows(build){
 
-return Object.entries(build?.selections||{})
-.map(([key,item])=>{
+const labels={
+case:'Case Size',
+color:'Case Color',
+customColor:'Custom Color',
+sub:'Subwoofer',
+subCount:'Number of Subwoofers',
+subBrand:'Subwoofer Brand',
+subLocation:'Subwoofer Location',
+subSize:'Subwoofer Size',
+count:'Number of Speakers',
+tweeters:'Extra Tweeters',
+power:'Power System',
+otherPower:'Custom Power Brand',
+brand:'Speaker Brand',
+size:'Speaker Size',
+extra:'Extras',
+customLogoText:'Custom Name / Logo',
+customLogoFont:'Logo Font',
+customLogoLocation:'Logo Location'
+};
 
-const label=item?.label||key;
-const value=item?.value??'';
+const order=[
+'case',
+'color',
+'customColor',
+'count',
+'brand',
+'size',
+'tweeters',
+'sub',
+'subCount',
+'subBrand',
+'subSize',
+'subLocation',
+'power',
+'otherPower',
+'extra',
+'customLogoText',
+'customLogoFont',
+'customLogoLocation'
+];
+
+return order
+.filter(key=>{
+const item=build?.selections?.[key];
+return item && item.value!=='' && item.value!==undefined;
+})
+.map(key=>{
+
+const item=build.selections[key];
+const label=labels[key]||key;
+const value=item.value;
 
 return `
 <tr>
-<td style="padding:7px;border-bottom:1px solid #ddd">
+<td style="padding:9px;border-bottom:1px solid #ddd">
 <b>${esc(label)}</b>
 </td>
 
-<td style="padding:7px;border-bottom:1px solid #ddd">
+<td style="padding:9px;border-bottom:1px solid #ddd">
 ${esc(value)}
 </td>
 </tr>
@@ -219,13 +266,13 @@ c.address2,
 const html=`
 <div style="font-family:Arial,sans-serif;max-width:760px;margin:auto">
 
-<h1>New Built2BoomCustoms Order</h1>
+<h1>🔊 New Built2BoomCustoms Order</h1>
 
-<p>
-<b>Payment status:</b> ${esc(status)}<br>
-<b>PayPal Order ID:</b> ${esc(order.orderID)}<br>
-<b>PayPal Capture ID:</b> ${esc(captureID)}
+<p style="font-size:18px">
+A new order has been <b>paid successfully</b> and is ready to be built.
 </p>
+
+<hr>
 
 <h2>Customer Information</h2>
 
@@ -237,7 +284,20 @@ const html=`
 
 <h2>Shipping Address</h2>
 
-<p>${address}</p>
+<p>
+${address}<br>
+United States
+</p>
+
+<hr>
+
+<h2>Payment Information</h2>
+
+<p>
+<b>Payment Status:</b> ${esc(status)}<br>
+<b>PayPal Order ID:</b> ${esc(order.orderID)}<br>
+<b>PayPal Capture ID:</b> ${esc(captureID)}
+</p>
 
 <h2>Build Details</h2>
 
@@ -277,7 +337,7 @@ to:[
 ],
 
 subject:
-`New Built2BoomCustoms Order - ${c.name||order.orderID}`,
+`PAID ORDER - ${c.name||'Customer'} - ${money(order.total)} - Built2BoomCustoms`,
 
 html
 
