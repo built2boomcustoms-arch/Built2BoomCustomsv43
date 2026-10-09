@@ -217,6 +217,16 @@ const subwooferBrands={
   'JL Audio':250
 };
 
+// Only show subwoofer brands that are available in the selected subwoofer size.
+const subwooferBrandsBySize={
+  '4"':['Customer Supplied','Pyle'],
+  '5"':['Customer Supplied','Pyle'],
+  '6.5"':['Customer Supplied','Pyle','Skar Audio','DS18','Memphis Audio','JL Audio'],
+  '8"':['Customer Supplied','Pyle','Boss Audio','Skar Audio','DS18','Kenwood','Pioneer','JBL','Infinity','Kicker','Rockford Fosgate','Memphis Audio','Wet Sounds','JL Audio'],
+  '10"':['Customer Supplied','Pyle','Boss Audio','Skar Audio','DS18','Kenwood','Pioneer','JBL','Infinity','Kicker','Rockford Fosgate','Memphis Audio','Wet Sounds','JL Audio'],
+  '12"':['Customer Supplied','Pyle','Boss Audio','Skar Audio','DS18','Kenwood','Pioneer','JBL','Infinity','Kicker','Rockford Fosgate','Memphis Audio','Wet Sounds','JL Audio']
+};
+
 function updateSubwooferBrandPricing(){
   const count=state.subCount?.value==='2 Subwoofers'?2:1;
   document.querySelectorAll('#subBrandOptions [data-subbrand-choice]').forEach(btn=>{
@@ -319,15 +329,6 @@ function updateSubwoofer(){
   } else { countInline.style.display='none'; state.subCount={value:'1 Subwoofer',price:0}; }
 
   const subCountNum=state.subCount?.value==='2 Subwoofers'?2:1;
-  const brandCurrent=(state.subBrand && Object.prototype.hasOwnProperty.call(subwooferBrands,state.subBrand.value))?state.subBrand.value:'Kicker';
-  state.subBrand={value:brandCurrent,price:subwooferBrands[brandCurrent]*subCountNum};
-  const brandSig='brands-'+subCountNum;
-  if(brandBox.dataset.signature!==brandSig){
-    brandBox.className='options';
-    brandBox.innerHTML=Object.entries(subwooferBrands).map(([name,per])=>`<button type="button" class="subbrand-choice" data-subbrand="${name}" data-subbrand-price="${per}">${name} — $${per*subCountNum}${per>0?' ($'+per+' each)':''}</button>`).join('');
-    brandBox.dataset.signature=brandSig;
-  }
-  brandBox.querySelectorAll('.subbrand-choice').forEach(btn=>btn.classList.toggle('active',btn.dataset.subbrand===state.subBrand.value));
 
   const sizes=subwooferSizes[caseValue]||subwooferSizes['2800'];
   const allowOutside=!['2800','3800','4800'].includes(caseValue);
@@ -337,6 +338,25 @@ function updateSubwoofer(){
   else if(!state.subLocation) state.subLocation={value:'Inside Box',price:0};
 
   if(!state.subSize || !sizes.some(x=>x[0]===state.subSize.value)) state.subSize={value:sizes[0][0],price:sizes[0][1]};
+
+  const allowedBrands=subwooferBrandsBySize[state.subSize.value]||['Customer Supplied'];
+  let brandCurrent=(state.subBrand && allowedBrands.includes(state.subBrand.value))?state.subBrand.value:null;
+  if(!brandCurrent){
+    brandCurrent=allowedBrands.includes('Kicker')?'Kicker':allowedBrands.find(name=>name!=='Customer Supplied')||'Customer Supplied';
+  }
+  state.subBrand={value:brandCurrent,price:Number(subwooferBrands[brandCurrent]||0)*subCountNum};
+
+  const brandSig='brands-'+state.subSize.value+'-'+subCountNum+'-'+allowedBrands.join('|');
+  if(brandBox.dataset.signature!==brandSig){
+    brandBox.className='options';
+    brandBox.innerHTML=allowedBrands.map(name=>{
+      const per=Number(subwooferBrands[name]||0);
+      return `<button type="button" class="subbrand-choice" data-subbrand="${name}" data-subbrand-price="${per}">${name} — $${per*subCountNum}${per>0?' ($'+per+' each)':''}</button>`;
+    }).join('');
+    brandBox.dataset.signature=brandSig;
+  }
+  brandBox.querySelectorAll('.subbrand-choice').forEach(btn=>btn.classList.toggle('active',btn.dataset.subbrand===state.subBrand.value));
+
   const sizeSig=caseValue+'|'+sizes.map(x=>x[0]).join('|');
   if(q9Box.dataset.signature!==sizeSig){
     q9Box.innerHTML=sizes.map((x,i)=>`<button type="button" class="q9-choice" data-q9-index="${i}">${x[0]} — ${x[1]?'$'+x[1]:'Included'}</button>`).join('');
