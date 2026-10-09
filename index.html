@@ -71,12 +71,16 @@ h2{font-size:38px;margin:0 0 8px}.muted{color:#9da3aa;line-height:1.6}
 
 <div class="step"><h3>3. Add a Subwoofer?</h3><div class="options">
 <button class="option active" data-group="sub" data-value="No Subwoofer" data-price="0">No</button>
-<button class="option" data-group="sub" data-value="Yes" data-price="0">Yes<small>Choose the subwoofer brand below</small></button>
+<button class="option" data-group="sub" data-value="Yes" data-price="0">Yes<small>Choose your subwoofer setup below</small></button>
 </div>
-<div class="inline-sub" id="subCountInline" style="display:none"><h4>Number of Subwoofers</h4><div class="options"><button class="option active" data-group="subCount" data-value="1 Subwoofer" data-price="0">1 Subwoofer — Choose Brand</button><button class="option" data-group="subCount" data-value="2 Subwoofers" data-price="0">2 Subwoofers — Choose Brand<small>Additional subwoofer</small></button></div></div><div class="inline-sub" id="subLocationInline" style="display:none"><h4>Subwoofer Location</h4><div class="options">
+<div class="inline-sub" id="subCountInline" style="display:none"><h4>Number of Subwoofers</h4><div class="options"><button class="option active" data-group="subCount" data-value="1 Subwoofer" data-price="0">1 Subwoofer — Choose Brand</button><button class="option" data-group="subCount" data-value="2 Subwoofers" data-price="0">2 Subwoofers — Choose Brand<small>Additional subwoofer</small></button></div></div>
+<div class="inline-sub" id="subLocationInline" style="display:none"><h4>Subwoofer Location</h4><div class="options">
 <button class="option active" data-group="subLocation" data-value="Inside Box" data-price="0">Inside Box — $0<small>Subwoofer mounted into the enclosure</small></button>
 <button class="option" data-group="subLocation" data-value="Outside Box" data-price="0">Outside Box — $0<small>Subwoofer mounted externally</small></button>
-</div><div class="inline-sub" id="subBrandInline" style="display:none"><h4>Subwoofer Brand</h4><div class="options" id="subBrandOptions"></div></div></div>
+</div></div>
+<div class="inline-sub" id="subSizeStep" style="display:none"><h4>Subwoofer Size</h4><div class="note" style="margin-bottom:10px">Available brands may vary depending on the subwoofer size selected.</div><div id="q9SubSizeChoices" class="q9-grid" aria-label="Subwoofer Size choices"></div></div>
+<div class="inline-sub" id="subBrandInline" style="display:none"><h4>Subwoofer Brand</h4><div class="options" id="subBrandOptions"></div></div>
+</div>
 
 <div class="step"><h3>4. Number of Speakers</h3><div class="options" id="speakerCountOptions"></div></div>
 
@@ -113,9 +117,7 @@ h2{font-size:38px;margin:0 0 8px}.muted{color:#9da3aa;line-height:1.6}
 <button type="button" class="option" data-group="brand" data-value="JL Audio" data-price="180" data-pair-price="180">JL Audio — $180/pair</button>
 </div></div>
 
-<div class="step" id="subSizeStep" style="display:none"><h3>9. Subwoofer Size</h3><div id="q9SubSizeChoices" class="q9-grid" aria-label="Subwoofer Size choices"></div></div>
-
-<div class="step"><h3>10. Extras</h3><div class="options" id="extrasOptions">
+<div class="step"><h3>9. Extras</h3><div class="options" id="extrasOptions">
 <button type="button" class="option active" data-group="extra" data-value="None" data-price="0">No Extras — $0</button>
 <button type="button" class="option" data-group="extra" data-value="Battery Voltage and Charging Port" data-price="25">Battery Voltage and Charging Port — $25</button>
 <button type="button" class="option" data-group="extra" data-value="Custom Name / Logo" data-price="20">Custom Name / Logo — $20</button>
