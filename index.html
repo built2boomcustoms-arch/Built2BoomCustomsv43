@@ -95,6 +95,7 @@ h2{font-size:38px;margin:0 0 8px}.muted{color:#9da3aa;line-height:1.6}
 <button class="option" data-group="power" data-value="Makita 18V" data-price="15">Makita 18V — $15</button>
 <button class="option" data-group="power" data-value="Other" data-price="15">Other — $15</button>
 </div>
+<div id="bigDaddyPowerNote" class="custom-paint-note" style="display:none;margin-top:12px"><strong>Big Daddy requires double the battery life.</strong> Every power system option is ×2 for the Big Daddy.</div>
 <div id="otherPowerWrap" style="display:none;margin-top:12px"><input id="otherPower" type="text" placeholder="Enter battery/power brand" style="width:100%;padding:14px;border-radius:10px;border:1px solid #30343a;background:#0d1013;color:#eee"></div>
 </div>
 
@@ -248,6 +249,24 @@ function updateBrandPricing(){
     btn.dataset.price=String(total);
     btn.innerHTML=`${btn.dataset.value} — $${total.toFixed(0)}${pair>0?' ('+pair+' / pair)':''}`;
     if(state.brand?.value===btn.dataset.value) state.brand.price=pair;
+  });
+}
+
+function updatePowerOptions(){
+  const caseValue=(state.case||getDefault('case')).value;
+  const isBigDaddy=caseValue==='9800';
+  const note=document.getElementById('bigDaddyPowerNote');
+  if(note) note.style.display=isBigDaddy?'block':'none';
+
+  document.querySelectorAll('[data-group="power"]').forEach(btn=>{
+    if(!btn.dataset.basePrice) btn.dataset.basePrice=String(Number(btn.dataset.price||0));
+    const basePrice=Number(btn.dataset.basePrice||0);
+    const price=isBigDaddy ? basePrice*2 : basePrice;
+    btn.dataset.price=String(price);
+
+    const value=btn.dataset.value;
+    btn.innerHTML=`${value}${isBigDaddy?' ×2':''} — $${price}`;
+    if(state.power?.value===value) state.power.price=price;
   });
 }
 
@@ -427,6 +446,7 @@ function render(){
   updateSpeakerOptions();
   updateColorOptions();
   updateSubwoofer();
+  updatePowerOptions();
   const logoWrap=document.getElementById('logoWrap');
   const extraValue=(state.extra||getDefault('extra'))?.value||'None';
   logoWrap.style.display=extraValue.includes('Custom Name / Logo')?'block':'none';
