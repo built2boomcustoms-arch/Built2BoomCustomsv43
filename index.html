@@ -196,14 +196,15 @@ const speakerConfigs={
 
 const subwooferSizes={
   '2800':[['4"',0],['5"',0],['6.5"',0]],
-  '3800':[['8"',0]],
-  '4800':[['4"',0],['5"',0],['6.5"',0]],
-  '5800':[['8"',0],['10"',0],['12"',0]],
-  '9800':[['8"',0],['10"',0],['12"',0]]
+  '3800':[['4"',0],['5"',0],['6.5"',0],['8"',0]],
+  '4800':[['4"',0],['5"',0],['6.5"',0],['8"',0]],
+  '5800':[['8"',0],['10"',0]],
+  '9800':[['8"',0],['10"',0]]
 };
 
 const subwooferBrands={
   'Customer Supplied':0,
+  'Generic':20,
   'Pyle':40,
   'Boss Audio':50,
   'Skar Audio':90,
@@ -221,12 +222,11 @@ const subwooferBrands={
 
 // Only show subwoofer brands that are available in the selected subwoofer size.
 const subwooferBrandsBySize={
-  '4"':['Customer Supplied','Pyle'],
-  '5"':['Customer Supplied','Pyle'],
+  '4"':['Customer Supplied','Generic','Pyle'],
+  '5"':['Customer Supplied','Generic','Pyle'],
   '6.5"':['Customer Supplied','Pyle','Skar Audio','DS18','Memphis Audio','JL Audio'],
   '8"':['Customer Supplied','Pyle','Boss Audio','Skar Audio','DS18','Kenwood','Pioneer','JBL','Infinity','Kicker','Rockford Fosgate','Memphis Audio','Wet Sounds','JL Audio'],
-  '10"':['Customer Supplied','Pyle','Boss Audio','Skar Audio','DS18','Kenwood','Pioneer','JBL','Infinity','Kicker','Rockford Fosgate','Memphis Audio','Wet Sounds','JL Audio'],
-  '12"':['Customer Supplied','Pyle','Boss Audio','Skar Audio','DS18','Kenwood','Pioneer','JBL','Infinity','Kicker','Rockford Fosgate','Memphis Audio','Wet Sounds','JL Audio']
+  '10"':['Customer Supplied','Pyle','Boss Audio','Skar Audio','DS18','Kenwood','Pioneer','JBL','Infinity','Kicker','Rockford Fosgate','Memphis Audio','Wet Sounds','JL Audio']
 };
 
 function updateSubwooferBrandPricing(){
@@ -266,6 +266,9 @@ function updateSpeakerOptions(){
   }
   if(caseValue==='5800' && state.sub && state.sub.value==='Yes'){
     cfg.counts=baseCfg.counts.filter(x=>x[0] <= 2);
+  }
+  if((caseValue==='3800' || caseValue==='4800') && state.sub && state.sub.value==='Yes' && state.subLocation?.value==='Outside Box'){
+    cfg.counts=baseCfg.counts.filter(x=>x[0] <= 1);
   }
 
   const countBox=document.getElementById('speakerCountOptions');
@@ -333,7 +336,7 @@ function updateSubwoofer(){
   const subCountNum=state.subCount?.value==='2 Subwoofers'?2:1;
 
   const sizes=subwooferSizes[caseValue]||subwooferSizes['2800'];
-  const allowOutside=!['2800','3800','4800'].includes(caseValue);
+  const allowOutside=caseValue!=='2800';
   const outside=inline.querySelector('[data-value="Outside Box"]');
   outside.style.display=allowOutside?'block':'none';
   if(!allowOutside){state.subLocation={value:'Inside Box',price:0}; inline.querySelectorAll('[data-group="subLocation"]').forEach(x=>x.classList.toggle('active',x.dataset.value==='Inside Box'));}
