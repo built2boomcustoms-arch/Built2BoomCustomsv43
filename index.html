@@ -46,8 +46,7 @@ h2{font-size:38px;margin:0 0 8px}.muted{color:#9da3aa;line-height:1.6}
 <div>
 <p style="letter-spacing:2px;font-weight:800">BUILT TO YOUR SPECS</p>
 <h1>Build Your Own Portable Sound System.</h1>
-<p class="muted">Choose your case dimensions, speakers, subwoofer, tweeters, and power system. Every speaker box is custom-built to your specifications.</p>
-<p class="muted"><strong>Please Note:</strong> Our current speaker systems are water-resistant, not waterproof, and should not be fully submerged in water. We are actively developing a new, fully waterproof and floatable speaker system designed for even more adventures on the water. Stay tuned for future updates!</p>
+<p class="muted">Choose your case dimensions, speakers, subwoofer, tweeters and power system. We build the finished box to your configuration.</p>
 <a class="btn" href="#builder">START BUILDING →</a>
 </div>
 <div class="hero-box"><img src="IMG_6264.JPG" alt="Built2BoomCustoms custom speaker box build"></div>
@@ -60,7 +59,8 @@ h2{font-size:38px;margin:0 0 8px}.muted{color:#9da3aa;line-height:1.6}
 <div class="card questions-card"><div class="question-columns"><div class="question-list">
 
 <div class="step"><h3>1. Box Size</h3><div class="options case-options">
-<button class="option active" data-group="case" data-value="2800" data-price="30"><span class="case-title">Small Medium — $30</span><span class="case-dims">13.5 × 11.375 × 6 in</span></button>
+<button class="option active" data-group="case" data-value="1800" data-price="15"><span class="case-title">Small — $15</span><span class="case-dims">9.25 × 7.5 × 4.375 in</span></button>
+<button class="option" data-group="case" data-value="2800" data-price="30"><span class="case-title">Small Medium — $30</span><span class="case-dims">13.5 × 11.375 × 6 in</span></button>
 <button class="option" data-group="case" data-value="3800" data-price="40"><span class="case-title">Medium — $40</span><span class="case-dims">16.5 × 13 × 6.75 in</span></button>
 <button class="option" data-group="case" data-value="4800" data-price="60"><span class="case-title">Largeish — $60</span><span class="case-dims">20.3125 × 15.5 × 7.375 in</span></button>
 <button class="option" data-group="case" data-value="5800" data-price="90"><span class="case-title">Large on Wheels — $90</span><span class="case-dims">21.875 × 13.75 × 9 in</span><span class="case-wheels">Wheels</span></button>
@@ -72,16 +72,12 @@ h2{font-size:38px;margin:0 0 8px}.muted{color:#9da3aa;line-height:1.6}
 
 <div class="step"><h3>3. Add a Subwoofer?</h3><div class="options">
 <button class="option active" data-group="sub" data-value="No Subwoofer" data-price="0">No</button>
-<button class="option" data-group="sub" data-value="Yes" data-price="0">Yes<small>Choose your subwoofer setup below</small></button>
+<button class="option" data-group="sub" data-value="Yes" data-price="0">Yes<small>Choose the subwoofer brand below</small></button>
 </div>
-<div class="inline-sub" id="subCountInline" style="display:none"><h4>Number of Subwoofers</h4><div class="options"><button class="option active" data-group="subCount" data-value="1 Subwoofer" data-price="0">1 Subwoofer — Choose Brand</button><button class="option" data-group="subCount" data-value="2 Subwoofers" data-price="0">2 Subwoofers — Choose Brand<small>Additional subwoofer</small></button></div></div>
-<div class="inline-sub" id="subLocationInline" style="display:none"><h4>Subwoofer Location</h4><div class="options">
+<div class="inline-sub" id="subCountInline" style="display:none"><h4>Number of Subwoofers</h4><div class="options"><button class="option active" data-group="subCount" data-value="1 Subwoofer" data-price="0">1 Subwoofer — Choose Brand</button><button class="option" data-group="subCount" data-value="2 Subwoofers" data-price="0">2 Subwoofers — Choose Brand<small>Additional subwoofer</small></button></div></div><div class="inline-sub" id="subLocationInline" style="display:none"><h4>Subwoofer Location</h4><div class="options">
 <button class="option active" data-group="subLocation" data-value="Inside Box" data-price="0">Inside Box — $0<small>Subwoofer mounted into the enclosure</small></button>
 <button class="option" data-group="subLocation" data-value="Outside Box" data-price="0">Outside Box — $0<small>Subwoofer mounted externally</small></button>
-</div></div>
-<div class="inline-sub" id="subSizeStep" style="display:none"><h4>Subwoofer Size</h4><div class="note" style="margin-bottom:10px">Available brands may vary depending on the subwoofer size selected.</div><div id="q9SubSizeChoices" class="q9-grid" aria-label="Subwoofer Size choices"></div></div>
-<div class="inline-sub" id="subBrandInline" style="display:none"><h4>Subwoofer Brand</h4><div class="options" id="subBrandOptions"></div></div>
-</div>
+</div><div class="inline-sub" id="subBrandInline" style="display:none"><h4>Subwoofer Brand</h4><div class="options" id="subBrandOptions"></div></div></div>
 
 <div class="step"><h3>4. Number of Speakers</h3><div class="options" id="speakerCountOptions"></div></div>
 
@@ -96,7 +92,6 @@ h2{font-size:38px;margin:0 0 8px}.muted{color:#9da3aa;line-height:1.6}
 <button class="option" data-group="power" data-value="Makita 18V" data-price="15">Makita 18V — $15</button>
 <button class="option" data-group="power" data-value="Other" data-price="15">Other — $15</button>
 </div>
-<div id="bigDaddyPowerNote" class="custom-paint-note" style="display:none;margin-top:12px"><strong>Big Daddy requires double the battery life.</strong> Every power system option is ×2 for the Big Daddy.</div>
 <div id="otherPowerWrap" style="display:none;margin-top:12px"><input id="otherPower" type="text" placeholder="Enter battery/power brand" style="width:100%;padding:14px;border-radius:10px;border:1px solid #30343a;background:#0d1013;color:#eee"></div>
 </div>
 
@@ -105,21 +100,24 @@ h2{font-size:38px;margin:0 0 8px}.muted{color:#9da3aa;line-height:1.6}
 <div class="step"><h3>8. Speaker Brand</h3><div class="options">
 <button type="button" class="option" data-group="brand" data-value="Customer Supplied" data-price="0" data-pair-price="0">Customer Supplied — $0/pair</button>
 <button type="button" class="option" data-group="brand" data-value="Kenwood" data-price="40" data-pair-price="40">Kenwood — $40/pair</button>
-<button type="button" class="option" data-group="brand" data-value="Pyle" data-price="40" data-pair-price="40">Pyle — $40/pair</button>
-<button type="button" class="option" data-group="brand" data-value="Skar Audio" data-price="50" data-pair-price="50">Skar Audio — $50/pair</button>
+<button type="button" class="option" data-group="brand" data-value="Pyle" data-price="45" data-pair-price="45">Pyle — $45/pair</button>
+<button type="button" class="option" data-group="brand" data-value="Skar Audio" data-price="60" data-pair-price="60">Skar Audio — $60/pair</button>
 <button type="button" class="option" data-group="brand" data-value="Pioneer" data-price="50" data-pair-price="50">Pioneer — $50/pair</button>
 <button type="button" class="option" data-group="brand" data-value="Boss Audio" data-price="50" data-pair-price="50">Boss Audio — $50/pair</button>
-<button type="button" class="option" data-group="brand" data-value="DS18" data-price="60" data-pair-price="60">DS18 — $60/pair</button>
-<button type="button" class="option" data-group="brand" data-value="Memphis Audio" data-price="75" data-pair-price="75">Memphis Audio — $75/pair</button>
+<button type="button" class="option" data-group="brand" data-value="DS18" data-price="85" data-pair-price="85">DS18 — $85/pair</button>
+<button type="button" class="option" data-group="brand" data-value="Memphis Audio" data-price="105" data-pair-price="105">Memphis Audio — $105/pair</button>
 <button type="button" class="option active" data-group="brand" data-value="Kicker" data-price="80" data-pair-price="80">Kicker — $80/pair</button>
-<button type="button" class="option" data-group="brand" data-value="JBL" data-price="80" data-pair-price="80">JBL — $80/pair</button>
-<button type="button" class="option" data-group="brand" data-value="Infinity" data-price="80" data-pair-price="80">Infinity — $80/pair</button>
+<button type="button" class="option" data-group="brand" data-value="JBL" data-price="115" data-pair-price="115">JBL — $115/pair</button>
+<button type="button" class="option" data-group="brand" data-value="Infinity" data-price="115" data-pair-price="115">Infinity — $115/pair</button>
 <button type="button" class="option" data-group="brand" data-value="Rockford Fosgate" data-price="90" data-pair-price="90">Rockford Fosgate — $90/pair</button>
 <button type="button" class="option" data-group="brand" data-value="Wet Sounds" data-price="150" data-pair-price="150">Wet Sounds — $150/pair</button>
 <button type="button" class="option" data-group="brand" data-value="JL Audio" data-price="180" data-pair-price="180">JL Audio — $180/pair</button>
+<button type="button" class="option" data-group="brand" data-value="Scosche" data-price="50" data-pair-price="50">Scosche — $50/pair</button>
 </div></div>
 
-<div class="step"><h3>9. Extras</h3><div class="options" id="extrasOptions">
+<div class="step" id="subSizeStep" style="display:none"><h3>9. Subwoofer Size</h3><div id="q9SubSizeChoices" class="q9-grid" aria-label="Subwoofer Size choices"></div></div>
+
+<div class="step"><h3>10. Extras</h3><div class="options" id="extrasOptions">
 <button type="button" class="option active" data-group="extra" data-value="None" data-price="0">No Extras — $0</button>
 <button type="button" class="option" data-group="extra" data-value="Battery Voltage and Charging Port" data-price="25">Battery Voltage and Charging Port — $25</button>
 <button type="button" class="option" data-group="extra" data-value="Custom Name / Logo" data-price="20">Custom Name / Logo — $20</button>
@@ -149,7 +147,7 @@ h2{font-size:38px;margin:0 0 8px}.muted{color:#9da3aa;line-height:1.6}
 </div></div></div>
 
 <div class="card summary">
-<div class="summary-visual"><img id="buildCaseImage" src="case_2800.png" alt="Small Medium closed case"></div>
+<div class="summary-visual"><img id="buildCaseImage" src="case_1800.png" alt="Small closed case"></div>
 <h3>Your Build</h3>
 <div id="warning" class="warning"></div>
 <div id="summaryLines"></div>
@@ -172,10 +170,7 @@ const base=0;
 function getBuildPayload(){
   const groups=['case','color','customColor','sub','subCount','subBrand','subLocation','subSize','count','tweeters','power','otherPower','brand','size','extra','customLogoText','customLogoFont','customLogoLocation'];
   const selections={};
-  groups.forEach(key=>{
-    const picked=state[key]||getDefault(key);
-    if(picked && picked.value !== '') selections[key]={value:picked.value,price:Number(picked.price||0)};
-  });
+  groups.forEach(key=>{ if(state[key] && state[key].value !== '') selections[key]={value:state[key].value,price:Number(state[key].price||0)}; });
   const totalText=document.getElementById('total')?.textContent || '$0';
   return {selections,total:Number(totalText.replace(/[^0-9.]/g,''))||0};
 }
@@ -189,6 +184,7 @@ function startCheckout(){
 document.getElementById('checkoutBtn')?.addEventListener('click',startCheckout);
 
 const speakerConfigs={
+  '1800':{counts:[[1,0]],sizes:[['6.5"',0],['6×9',0]],tweeters:[[0,0],[1,10],[2,20],[3,30],[4,40]]},
   '2800':{counts:[[1,0]],sizes:[['6.5"',0],['6×9',0]],tweeters:[[0,0],[1,10],[2,20],[3,30],[4,40]]},
   '3800':{counts:[[1,0],[2,0]],sizes:[['6.5"',0],['6×9',0]],tweeters:[[0,0],[1,10],[2,20],[3,30],[4,40]]},
   '4800':{counts:[[1,0],[2,0]],sizes:[['6.5"',0],['6×9',0]],tweeters:[[0,0],[1,10],[2,20],[3,30],[4,40]]},
@@ -197,16 +193,16 @@ const speakerConfigs={
 };
 
 const subwooferSizes={
+  '1800':[['4"',0],['5"',0],['6.5"',0]],
   '2800':[['4"',0],['5"',0],['6.5"',0]],
-  '3800':[['4"',0],['5"',0],['6.5"',0],['8"',0]],
-  '4800':[['4"',0],['5"',0],['6.5"',0],['8"',0]],
-  '5800':[['8"',0],['10"',0]],
-  '9800':[['8"',0],['10"',0]]
+  '3800':[['8"',0]],
+  '4800':[['4"',0],['5"',0],['6.5"',0]],
+  '5800':[['8"',0],['10"',0],['12"',0]],
+  '9800':[['8"',0],['10"',0],['12"',0]]
 };
 
 const subwooferBrands={
   'Customer Supplied':0,
-  'Generic':20,
   'Pyle':40,
   'Boss Audio':50,
   'Skar Audio':90,
@@ -215,20 +211,11 @@ const subwooferBrands={
   'Pioneer':100,
   'JBL':110,
   'Infinity':110,
-  'Kicker':100,
+  'Kicker':120,
   'Rockford Fosgate':130,
   'Memphis Audio':130,
   'Wet Sounds':250,
   'JL Audio':250
-};
-
-// Only show subwoofer brands that are available in the selected subwoofer size.
-const subwooferBrandsBySize={
-  '4"':['Customer Supplied','Generic','Pyle'],
-  '5"':['Customer Supplied','Generic','Pyle'],
-  '6.5"':['Customer Supplied','Pyle','Skar Audio','DS18','Memphis Audio','JL Audio'],
-  '8"':['Customer Supplied','Pyle','Boss Audio','Skar Audio','DS18','Kenwood','Pioneer','JBL','Infinity','Kicker','Rockford Fosgate','Memphis Audio','Wet Sounds','JL Audio'],
-  '10"':['Customer Supplied','Pyle','Boss Audio','Skar Audio','DS18','Kenwood','Pioneer','JBL','Infinity','Kicker','Rockford Fosgate','Memphis Audio','Wet Sounds','JL Audio']
 };
 
 function updateSubwooferBrandPricing(){
@@ -242,38 +229,29 @@ function updateSubwooferBrandPricing(){
   });
 }
 
+const speakerPairPrices={
+  '6.5"': {"Customer Supplied": 0, "Kenwood": 40, "Pyle": 45, "Skar Audio": 60, "Pioneer": 50, "Boss Audio": 50, "DS18": 85, "Memphis Audio": 105, "Kicker": 80, "JBL": 115, "Infinity": 115, "Rockford Fosgate": 90, "Wet Sounds": 150, "JL Audio": 180, "Scosche": 50},
+  '6×9': {"Customer Supplied": 0, "Kenwood": 60, "Pyle": 65, "Skar Audio": 75, "Pioneer": 45, "Boss Audio": 55, "DS18": 85, "Memphis Audio": 110, "Kicker": 100, "JBL": 115, "Infinity": 130, "Rockford Fosgate": 115, "Wet Sounds": 650, "JL Audio": 200, "Scosche": 60}
+};
+function getSpeakerPairPrice(brand, size){
+  return Number((speakerPairPrices[size]||speakerPairPrices['6.5"'])[brand]||0);
+}
 function updateBrandPricing(){
   const count=Number((state.count||{}).value?.match(/\d+/)?.[0]||1);
+  const size=state.size?.value||'6.5"';
   document.querySelectorAll('[data-group="brand"]').forEach(btn=>{
-    const pair=Number(btn.dataset.pairPrice ?? btn.dataset.price ?? 0);
+    const pair=getSpeakerPairPrice(btn.dataset.value,size);
     const total=pair*count/2;
+    btn.dataset.pairPrice=String(pair);
     btn.dataset.price=String(total);
-    btn.innerHTML=`${btn.dataset.value} — $${total.toFixed(0)}${pair>0?' ('+pair+' / pair)':''}`;
+    btn.textContent=`${btn.dataset.value} — $${total.toFixed(2).replace(/\.00$/,'')} (${pair} / pair)`;
     if(state.brand?.value===btn.dataset.value) state.brand.price=pair;
-  });
-}
-
-function updatePowerOptions(){
-  const caseValue=(state.case||getDefault('case')).value;
-  const isBigDaddy=caseValue==='9800';
-  const note=document.getElementById('bigDaddyPowerNote');
-  if(note) note.style.display=isBigDaddy?'block':'none';
-
-  document.querySelectorAll('[data-group="power"]').forEach(btn=>{
-    if(!btn.dataset.basePrice) btn.dataset.basePrice=String(Number(btn.dataset.price||0));
-    const basePrice=Number(btn.dataset.basePrice||0);
-    const price=isBigDaddy ? basePrice*2 : basePrice;
-    btn.dataset.price=String(price);
-
-    const value=btn.dataset.value;
-    btn.innerHTML=`${value}${isBigDaddy?' ×2':''} — $${price}`;
-    if(state.power?.value===value) state.power.price=price;
   });
 }
 
 function updateSpeakerOptions(){
   const caseValue=(state.case||getDefault('case')).value;
-  const baseCfg=speakerConfigs[caseValue]||speakerConfigs['2800'];
+  const baseCfg=speakerConfigs[caseValue]||speakerConfigs['1800'];
   let cfg={counts:baseCfg.counts.slice(),sizes:baseCfg.sizes.slice(),tweeters:baseCfg.tweeters.slice()};
   const twoSubs=state.subCount && state.subCount.value==='2 Subwoofers';
   const insideSubs=!state.subLocation || state.subLocation.value==='Inside Box';
@@ -287,9 +265,6 @@ function updateSpeakerOptions(){
   if(caseValue==='5800' && state.sub && state.sub.value==='Yes'){
     cfg.counts=baseCfg.counts.filter(x=>x[0] <= 2);
   }
-  if((caseValue==='3800' || caseValue==='4800') && state.sub && state.sub.value==='Yes' && state.subLocation?.value==='Outside Box'){
-    cfg.counts=baseCfg.counts.filter(x=>x[0] <= 1);
-  }
 
   const countBox=document.getElementById('speakerCountOptions');
   const sizeBox=document.getElementById('speakerSizeOptions');
@@ -302,8 +277,8 @@ function updateSpeakerOptions(){
   state.count={value:String(currentCount)+(currentCount===1?' speaker':' speakers'),price:cfg.counts.find(x=>x[0]===currentCount)[1]};
   state.size={value:currentSize,price:cfg.sizes.find(x=>x[0]===currentSize)[1]};
   state.tweeters={value:currentTweeters===0?'None':String(currentTweeters),price:cfg.tweeters.find(x=>x[0]===currentTweeters)[1]};
-  const pairBrand=Number(document.querySelector('[data-group="brand"].active')?.dataset.pairPrice ?? 0);
-  countBox.innerHTML=cfg.counts.map(x=>{const label=x[0]===1?'1 Speaker':x[0]+' Speakers';const speakerPrice=pairBrand*x[0]/2;return `<button type="button" class="option ${currentCount===x[0]?'active':''}" data-dynamic-group="count" data-value="${label}" data-price="0">${label} — $${speakerPrice.toFixed(0)}</button>`}).join('');
+  const pairBrand=getSpeakerPairPrice((state.brand||getDefault('brand'))?.value||'Kicker',currentSize);
+  countBox.innerHTML=cfg.counts.map(x=>{const label=x[0]===1?'1 Speaker':x[0]+' Speakers';const speakerPrice=pairBrand*x[0]/2;return `<button type="button" class="option ${currentCount===x[0]?'active':''}" data-dynamic-group="count" data-value="${label}" data-price="0">${label} — $${speakerPrice.toFixed(2).replace(/\.00$/,'')}</button>`}).join('');
   sizeBox.innerHTML=cfg.sizes.map(x=>`<button type="button" class="option ${currentSize===x[0]?'active':''}" data-dynamic-group="size" data-value="${x[0]}" data-price="0">${x[0]} — Included</button>`).join('');
   tweeterBox.innerHTML=cfg.tweeters.map(x=>{const label=x[0]===0?'None':x[0]+' Tweeter'+(x[0]===1?'':'s');return `<button type="button" class="option ${currentTweeters===x[0]?'active':''}" data-dynamic-group="tweeters" data-value="${label}" data-price="${x[1]}">${label} — $${x[1]}</button>`}).join('');
   updateBrandPricing();
@@ -354,34 +329,24 @@ function updateSubwoofer(){
   } else { countInline.style.display='none'; state.subCount={value:'1 Subwoofer',price:0}; }
 
   const subCountNum=state.subCount?.value==='2 Subwoofers'?2:1;
+  const brandCurrent=(state.subBrand && Object.prototype.hasOwnProperty.call(subwooferBrands,state.subBrand.value))?state.subBrand.value:'Kicker';
+  state.subBrand={value:brandCurrent,price:subwooferBrands[brandCurrent]*subCountNum};
+  const brandSig='brands-'+subCountNum;
+  if(brandBox.dataset.signature!==brandSig){
+    brandBox.className='options';
+    brandBox.innerHTML=Object.entries(subwooferBrands).map(([name,per])=>`<button type="button" class="subbrand-choice" data-subbrand="${name}" data-subbrand-price="${per}">${name} — $${per*subCountNum}${per>0?' ($'+per+' each)':''}</button>`).join('');
+    brandBox.dataset.signature=brandSig;
+  }
+  brandBox.querySelectorAll('.subbrand-choice').forEach(btn=>btn.classList.toggle('active',btn.dataset.subbrand===state.subBrand.value));
 
-  const sizes=subwooferSizes[caseValue]||subwooferSizes['2800'];
-  const allowOutside=caseValue!=='2800';
+  const sizes=subwooferSizes[caseValue]||subwooferSizes['1800'];
+  const allowOutside=!['1800','2800','3800','4800'].includes(caseValue);
   const outside=inline.querySelector('[data-value="Outside Box"]');
   outside.style.display=allowOutside?'block':'none';
   if(!allowOutside){state.subLocation={value:'Inside Box',price:0}; inline.querySelectorAll('[data-group="subLocation"]').forEach(x=>x.classList.toggle('active',x.dataset.value==='Inside Box'));}
   else if(!state.subLocation) state.subLocation={value:'Inside Box',price:0};
 
   if(!state.subSize || !sizes.some(x=>x[0]===state.subSize.value)) state.subSize={value:sizes[0][0],price:sizes[0][1]};
-
-  const allowedBrands=subwooferBrandsBySize[state.subSize.value]||['Customer Supplied'];
-  let brandCurrent=(state.subBrand && allowedBrands.includes(state.subBrand.value))?state.subBrand.value:null;
-  if(!brandCurrent){
-    brandCurrent=allowedBrands.includes('Kicker')?'Kicker':allowedBrands.find(name=>name!=='Customer Supplied')||'Customer Supplied';
-  }
-  state.subBrand={value:brandCurrent,price:Number(subwooferBrands[brandCurrent]||0)*subCountNum};
-
-  const brandSig='brands-'+state.subSize.value+'-'+subCountNum+'-'+allowedBrands.join('|');
-  if(brandBox.dataset.signature!==brandSig){
-    brandBox.className='options';
-    brandBox.innerHTML=allowedBrands.map(name=>{
-      const per=Number(subwooferBrands[name]||0);
-      return `<button type="button" class="subbrand-choice" data-subbrand="${name}" data-subbrand-price="${per}">${name} — $${per*subCountNum}${per>0?' ($'+per+' each)':''}</button>`;
-    }).join('');
-    brandBox.dataset.signature=brandSig;
-  }
-  brandBox.querySelectorAll('.subbrand-choice').forEach(btn=>btn.classList.toggle('active',btn.dataset.subbrand===state.subBrand.value));
-
   const sizeSig=caseValue+'|'+sizes.map(x=>x[0]).join('|');
   if(q9Box.dataset.signature!==sizeSig){
     q9Box.innerHTML=sizes.map((x,i)=>`<button type="button" class="q9-choice" data-q9-index="${i}">${x[0]} — ${x[1]?'$'+x[1]:'Included'}</button>`).join('');
@@ -391,6 +356,7 @@ function updateSubwoofer(){
   q9Box.querySelectorAll('.q9-choice').forEach(btn=>btn.classList.toggle('active',Number(btn.dataset.q9Index)===activeSizeIndex));
 }
 const caseInfo={
+  '1800':{name:'Small',dims:'9.25 × 7.5 × 4.375 in',colors:['Black'],image:'case_1800.png'},
   '2800':{name:'Small Medium',dims:'13.5 × 11.375 × 6 in',colors:['Black','Orange','Tan'],image:'case_2800.png'},
   '3800':{name:'Medium',dims:'16.5 × 13 × 6.75 in',colors:['Black','Orange','Tan'],image:'case_3800.png'},
   '4800':{name:'Largeish',dims:'20.3125 × 15.5 × 7.375 in',colors:['Black','Green','Orange','Tan','Yellow'],image:'case_4800.png'},
@@ -400,7 +366,7 @@ const caseInfo={
 
 function updateColorOptions(){
   const caseValue=(state.case||getDefault('case')).value;
-  const info=caseInfo[caseValue]||caseInfo['2800'];
+  const info=caseInfo[caseValue]||caseInfo['1800'];
   const box=document.getElementById('colorOptions');
   const current=state.color&&(info.colors.includes(state.color.value)||state.color.value==='Custom')?state.color.value:info.colors[0];
   state.color={value:current,price:current==='Custom'?25:0};
@@ -422,7 +388,7 @@ function updateColorOptions(){
 
 function openCaseModal(){
   const caseValue=(state.case||getDefault('case')).value;
-  const info=caseInfo[caseValue]||caseInfo['2800'];
+  const info=caseInfo[caseValue]||caseInfo['1800'];
   document.getElementById('caseModalImage').src=info.image;
   document.getElementById('caseModalImage').alt=`${info.name} closed case`;
   document.getElementById('caseModalTitle').textContent=info.name;
@@ -438,7 +404,7 @@ function closeCaseModal(){
 
 function render(){
   const buildCase=(state.case||getDefault('case')).value;
-  const buildInfo=caseInfo[buildCase]||caseInfo['2800'];
+  const buildInfo=caseInfo[buildCase]||caseInfo['1800'];
   const buildImage=document.getElementById('buildCaseImage');
   if(buildImage){
     buildImage.src=buildInfo.image;
@@ -447,7 +413,6 @@ function render(){
   updateSpeakerOptions();
   updateColorOptions();
   updateSubwoofer();
-  updatePowerOptions();
   const logoWrap=document.getElementById('logoWrap');
   const extraValue=(state.extra||getDefault('extra'))?.value||'None';
   logoWrap.style.display=extraValue.includes('Custom Name / Logo')?'block':'none';
@@ -469,9 +434,9 @@ function render(){
     // Speaker count pricing is determined by the selected brand's pair price.
     if(key==='count'){
       const speakerCount=Number(x.value.match(/\d+/)?.[0]||1);
-      const pairPrice=Number((state.brand||getDefault('brand'))?.price||0);
+      const pairPrice=getSpeakerPairPrice((state.brand||getDefault('brand'))?.value||'Kicker',state.size?.value||'6.5"');
       const speakerTotal=pairPrice*speakerCount/2;
-      html+=`<div class="line"><span>${label}</span><span>${x.value} — $${speakerTotal.toFixed(0)}</span></div>`;
+      html+=`<div class="line"><span>${label}</span><span>${x.value} — $${speakerTotal.toFixed(2).replace(/\.00$/,'')}</span></div>`;
       return;
     }
     // Speaker brand is displayed as the selected brand; its actual speaker cost is shown on the speaker-count line.
@@ -505,7 +470,7 @@ function render(){
   });
   // Add the speaker total once, using the selected brand's pair price.
   const speakerCountForTotal=Number((state.count||{}).value?.match(/\d+/)?.[0]||1);
-  const speakerPairPrice=Number((state.brand||getDefault('brand'))?.price||0);
+  const speakerPairPrice=getSpeakerPairPrice((state.brand||getDefault('brand'))?.value||'Kicker',state.size?.value||'6.5"');
   total+=speakerPairPrice*speakerCountForTotal/2;
 
   // Amplifier pricing: 1–2 speakers = $25, 3–4 = $50, 5–6 = $75, 7–8 = $100.
@@ -529,7 +494,7 @@ function render(){
   const currentExtra=(state.extra||getDefault('extra'))?.value||'None';
   document.querySelectorAll('[data-group="extra"]').forEach(btn=>btn.classList.toggle('active', currentExtra!=='None' && currentExtra.includes(btn.dataset.value) || (currentExtra==='None' && btn.dataset.value==='None')));
   document.getElementById('summaryLines').innerHTML=html;
-  document.getElementById('total').textContent='$'+Math.max(0,total).toFixed(0);
+  document.getElementById('total').textContent='$'+Math.max(0,total).toFixed(2).replace(/\.00$/,'');
 }
 
 document.querySelectorAll('[data-group="case"]').forEach(btn=>{
@@ -579,7 +544,7 @@ document.getElementById('q9SubSizeChoices').addEventListener('click',e=>{
   const btn=e.target.closest('.q9-choice');
   if(!btn) return;
   const caseValue=(state.case||getDefault('case')).value;
-  const sizes=subwooferSizes[caseValue]||subwooferSizes['2800'];
+  const sizes=subwooferSizes[caseValue]||subwooferSizes['1800'];
   const choice=sizes[Number(btn.dataset.q9Index)];
   if(!choice) return;
   chooseSubSize(choice[0], choice[1]);
