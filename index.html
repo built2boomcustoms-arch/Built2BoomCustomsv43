@@ -77,7 +77,7 @@ h2{font-size:38px;margin:0 0 8px}.muted{color:#9da3aa;line-height:1.6}
 <div class="inline-sub" id="subCountInline" style="display:none"><h4>Number of Subwoofers</h4><div class="options"><button class="option active" data-group="subCount" data-value="1 Subwoofer" data-price="0">1 Subwoofer — Choose Brand</button><button class="option" data-group="subCount" data-value="2 Subwoofers" data-price="0">2 Subwoofers — Choose Brand<small>Additional subwoofer</small></button></div></div><div class="inline-sub" id="subLocationInline" style="display:none"><h4>Subwoofer Location</h4><div class="options">
 <button class="option active" data-group="subLocation" data-value="Inside Box" data-price="0">Inside Box — $0<small>Subwoofer mounted into the enclosure</small></button>
 <button class="option" data-group="subLocation" data-value="Outside Box" data-price="0">Outside Box — $0<small>Subwoofer mounted externally</small></button>
-</div><div class="inline-sub" id="subSizeStep" style="display:none"><h4>Subwoofer Size</h4><div id="q9SubSizeChoices" class="q9-grid" aria-label="Subwoofer Size choices"></div></div><div class="inline-sub" id="subBrandInline" style="display:none"><h4>Subwoofer Brand</h4><div class="options" id="subBrandOptions"></div></div></div>
+</div><div class="inline-sub" id="subSizeStep" style="display:none"><h4>Subwoofer Size</h4><div class="note" style="margin-bottom:10px">Available brands may vary depending on the subwoofer size selected.</div><div id="q9SubSizeChoices" class="q9-grid" aria-label="Subwoofer Size choices"></div></div><div class="inline-sub" id="subBrandInline" style="display:none"><h4>Subwoofer Brand</h4><div class="options" id="subBrandOptions"></div></div></div>
 
 <div class="step"><h3>4. Number of Speakers</h3><div class="options" id="speakerCountOptions"></div></div>
 
@@ -193,16 +193,16 @@ const speakerConfigs={
 };
 
 const subwooferSizes={
-  '1800':[['4"',0],['5"',0],['6.5"',0]],
   '2800':[['4"',0],['5"',0],['6.5"',0]],
-  '3800':[['8"',0]],
-  '4800':[['4"',0],['5"',0],['6.5"',0]],
-  '5800':[['8"',0],['10"',0],['12"',0]],
-  '9800':[['8"',0],['10"',0],['12"',0]]
+  '3800':[['4"',0],['5"',0],['6.5"',0],['8"',0]],
+  '4800':[['4"',0],['5"',0],['6.5"',0],['8"',0]],
+  '5800':[['8"',0],['10"',0]],
+  '9800':[['8"',0],['10"',0]]
 };
 
 const subwooferBrands={
   'Customer Supplied':0,
+  'Generic':20,
   'Pyle':40,
   'Boss Audio':50,
   'Skar Audio':90,
@@ -211,11 +211,20 @@ const subwooferBrands={
   'Pioneer':100,
   'JBL':110,
   'Infinity':110,
-  'Kicker':120,
+  'Kicker':100,
   'Rockford Fosgate':130,
   'Memphis Audio':130,
   'Wet Sounds':250,
   'JL Audio':250
+};
+
+// Only show subwoofer brands that are available in the selected subwoofer size.
+const subwooferBrandsBySize={
+  '4"':['Customer Supplied','Generic','Pyle'],
+  '5"':['Customer Supplied','Generic','Pyle'],
+  '6.5"':['Customer Supplied','Pyle','Skar Audio','DS18','Memphis Audio','JL Audio'],
+  '8"':['Customer Supplied','Pyle','Boss Audio','Skar Audio','DS18','Kenwood','Pioneer','JBL','Infinity','Kicker','Rockford Fosgate','Memphis Audio','Wet Sounds','JL Audio'],
+  '10"':['Customer Supplied','Pyle','Boss Audio','Skar Audio','DS18','Kenwood','Pioneer','JBL','Infinity','Kicker','Rockford Fosgate','Memphis Audio','Wet Sounds','JL Audio']
 };
 
 function updateSubwooferBrandPricing(){
@@ -261,6 +270,9 @@ function updateSpeakerOptions(){
     // Two internal subs still allow up to 6 speakers; two external subs allow only 4.
     cfg.counts=baseCfg.counts.filter(x=>x[0] <= (insideSubs ? 6 : 4));
     cfg.tweeters=baseCfg.tweeters.filter(x=>x[0] <= 2);
+  }
+  if((caseValue==='3800' || caseValue==='4800') && state.sub?.value==='Yes' && state.subLocation?.value==='Outside Box'){
+    cfg.counts=baseCfg.counts.filter(x=>x[0] <= 1);
   }
   if(caseValue==='5800' && state.sub && state.sub.value==='Yes'){
     cfg.counts=baseCfg.counts.filter(x=>x[0] <= 2);
@@ -329,24 +341,34 @@ function updateSubwoofer(){
   } else { countInline.style.display='none'; state.subCount={value:'1 Subwoofer',price:0}; }
 
   const subCountNum=state.subCount?.value==='2 Subwoofers'?2:1;
-  const brandCurrent=(state.subBrand && Object.prototype.hasOwnProperty.call(subwooferBrands,state.subBrand.value))?state.subBrand.value:'Kicker';
-  state.subBrand={value:brandCurrent,price:subwooferBrands[brandCurrent]*subCountNum};
-  const brandSig='brands-'+subCountNum;
-  if(brandBox.dataset.signature!==brandSig){
-    brandBox.className='options';
-    brandBox.innerHTML=Object.entries(subwooferBrands).map(([name,per])=>`<button type="button" class="subbrand-choice" data-subbrand="${name}" data-subbrand-price="${per}">${name} — $${per*subCountNum}${per>0?' ($'+per+' each)':''}</button>`).join('');
-    brandBox.dataset.signature=brandSig;
-  }
-  brandBox.querySelectorAll('.subbrand-choice').forEach(btn=>btn.classList.toggle('active',btn.dataset.subbrand===state.subBrand.value));
 
   const sizes=subwooferSizes[caseValue]||subwooferSizes['1800'];
-  const allowOutside=!['1800','2800','3800','4800'].includes(caseValue);
+  const allowOutside=caseValue!=='2800';
   const outside=inline.querySelector('[data-value="Outside Box"]');
   outside.style.display=allowOutside?'block':'none';
   if(!allowOutside){state.subLocation={value:'Inside Box',price:0}; inline.querySelectorAll('[data-group="subLocation"]').forEach(x=>x.classList.toggle('active',x.dataset.value==='Inside Box'));}
   else if(!state.subLocation) state.subLocation={value:'Inside Box',price:0};
 
   if(!state.subSize || !sizes.some(x=>x[0]===state.subSize.value)) state.subSize={value:sizes[0][0],price:sizes[0][1]};
+
+  const allowedBrands=subwooferBrandsBySize[state.subSize.value]||['Customer Supplied'];
+  let brandCurrent=(state.subBrand && allowedBrands.includes(state.subBrand.value))?state.subBrand.value:null;
+  if(!brandCurrent){
+    brandCurrent=allowedBrands.includes('Kicker')?'Kicker':allowedBrands.find(name=>name!=='Customer Supplied')||'Customer Supplied';
+  }
+  state.subBrand={value:brandCurrent,price:Number(subwooferBrands[brandCurrent]||0)*subCountNum};
+
+  const brandSig='brands-'+state.subSize.value+'-'+subCountNum+'-'+allowedBrands.join('|');
+  if(brandBox.dataset.signature!==brandSig){
+    brandBox.className='options';
+    brandBox.innerHTML=allowedBrands.map(name=>{
+      const per=Number(subwooferBrands[name]||0);
+      return `<button type="button" class="subbrand-choice" data-subbrand="${name}" data-subbrand-price="${per}">${name} — $${per*subCountNum}${per>0?' ($'+per+' each)':''}</button>`;
+    }).join('');
+    brandBox.dataset.signature=brandSig;
+  }
+  brandBox.querySelectorAll('.subbrand-choice').forEach(btn=>btn.classList.toggle('active',btn.dataset.subbrand===state.subBrand.value));
+
   const sizeSig=caseValue+'|'+sizes.map(x=>x[0]).join('|');
   if(q9Box.dataset.signature!==sizeSig){
     q9Box.innerHTML=sizes.map((x,i)=>`<button type="button" class="q9-choice" data-q9-index="${i}">${x[0]} — ${x[1]?'$'+x[1]:'Included'}</button>`).join('');
@@ -410,9 +432,9 @@ function render(){
     buildImage.src=buildInfo.image;
     buildImage.alt=`${buildInfo.name} closed case`;
   }
+  updateSubwoofer();
   updateSpeakerOptions();
   updateColorOptions();
-  updateSubwoofer();
   const logoWrap=document.getElementById('logoWrap');
   const extraValue=(state.extra||getDefault('extra'))?.value||'None';
   logoWrap.style.display=extraValue.includes('Custom Name / Logo')?'block':'none';
