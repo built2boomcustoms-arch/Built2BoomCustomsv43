@@ -195,7 +195,7 @@ const base=0;
 function getBuildPayload(){
   const groups=['case','color','customColor','sub','subCount','subBrand','subLocation','subSize','count','tweeters','power','otherPower','batteryVoltage','brand','size','extra','customLogoText','customLogoFont','customLogoLocation'];
   const selections={};
-  groups.forEach(key=>{ const chosen=state[key] || getDefault(key); if(chosen && chosen.value !== '') selections[key]={value:chosen.value,price:Number(chosen.price||0)}; });
+  groups.forEach(key=>{ if(state[key] && state[key].value !== '') selections[key]={value:state[key].value,price:Number(state[key].price||0)}; });
   const totalText=document.getElementById('total')?.textContent || '$0';
   return {selections,total:Number(totalText.replace(/[^0-9.]/g,''))||0};
 }
