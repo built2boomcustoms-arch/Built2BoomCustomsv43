@@ -287,6 +287,13 @@ function updateBrandPricing(){
     btn.textContent=`${btn.dataset.value} — $${total.toFixed(2).replace(/\.00$/,'')} (${pair} / pair)`;
     if(state.brand?.value===btn.dataset.value) state.brand.price=pair;
   });
+  // Always display brands in ascending order for the currently selected speaker size.
+  const brandContainer=document.querySelector('[data-group="brand"]')?.parentElement;
+  if(brandContainer){
+    [...brandContainer.querySelectorAll('[data-group="brand"]')]
+      .sort((a,b)=>getSpeakerPairPrice(a.dataset.value,size)-getSpeakerPairPrice(b.dataset.value,size) || a.dataset.value.localeCompare(b.dataset.value))
+      .forEach(btn=>brandContainer.appendChild(btn));
+  }
 }
 
 function updateSpeakerOptions(){

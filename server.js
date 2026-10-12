@@ -10,49 +10,30 @@ app.use(express.static(__dirname));
 const BOX={1800:15,2800:30,3800:40,4800:60,5800:90,9800:150};
 const SHIPPING={1800:15,2800:20,3800:25,4800:35,5800:50,9800:95};
 
-const BRANDS={
-'Customer Supplied':0,
-'Kenwood':40,
-'Pyle':40,
-'Skar Audio':50,
-'Pioneer':50,
-'Boss Audio':50,
-'DS18':60,
-'Memphis Audio':75,
-'Kicker':80,
-'JBL':80,
-'Infinity':80,
-'Rockford Fosgate':90,
-'Wet Sounds':150,
-'JL Audio':180
+// Pricing synchronized with V46 builder; keep these server-side for payment integrity.
+const SPEAKER_PAIR_PRICES={
+  '6.5"': {"Customer Supplied": 0, "Kenwood": 40, "Pyle": 45, "Skar Audio": 60, "Pioneer": 50, "Boss Audio": 50, "DS18": 85, "Memphis Audio": 105, "Kicker": 80, "JBL": 115, "Infinity": 115, "Rockford Fosgate": 90, "Wet Sounds": 150, "JL Audio": 180, "Scosche": 50},
+  '6×9': {"Customer Supplied": 0, "Kenwood": 60, "Pyle": 65, "Skar Audio": 75, "Pioneer": 45, "Boss Audio": 55, "DS18": 85, "Memphis Audio": 110, "Kicker": 100, "JBL": 115, "Infinity": 130, "Rockford Fosgate": 115, "Wet Sounds": 650, "JL Audio": 200, "Scosche": 60}
 };
-
 const SUB_BRANDS={
-'Kicker':120,
-'Rockford Fosgate':130,
-'JBL':110,
-'DS18':100,
-'Skar Audio':90,
-'Memphis Audio':130,
-'Wet Sounds':250,
-'JL Audio':250,
-'Kenwood':100,
-'Pioneer':100,
-'Infinity':110,
-'Boss Audio':50,
-'Pyle':40,
-'Customer Supplied':0
+  'Customer Supplied':0,
+  'Generic':20,
+  'Pyle':40,
+  'Boss Audio':50,
+  'Skar Audio':90,
+  'DS18':100,
+  'Kenwood':100,
+  'Pioneer':100,
+  'JBL':110,
+  'Infinity':110,
+  'Kicker':100,
+  'Rockford Fosgate':130,
+  'Memphis Audio':130,
+  'Wet Sounds':250,
+  'JL Audio':250
 };
-
-const POWER={
-'Include Battery and Charger Bundle':60,
-'DeWalt 20V':15,
-'Milwaukee M18':15,
-'Hart 20V':15,
-'Ryobi 18V':15,
-'Makita 18V':15,
-'Other':15
-};
+const POWER=Object.fromEntries(['DeWalt','Milwaukee M18','Hart','Ryobi','Makita','Bauer','Hercules','Bosch','Milwaukee M12','Other'].map(x=>[x,15]));
+POWER['Include Battery and Charger Bundle']=60;
 
 const pendingOrders=new Map();
 
@@ -83,11 +64,13 @@ if(!count)
 throw new Error('Invalid speaker count.');
 
 const brand=val(build,'brand');
+const speakerSize=val(build,'size')||'6.5"';
+const pairPrices=SPEAKER_PAIR_PRICES[speakerSize];
 
-if(!(brand in BRANDS))
-throw new Error('Invalid speaker brand.');
+if(!pairPrices || !(brand in pairPrices))
+throw new Error('Invalid speaker brand or size: '+String(brand)+' / '+String(speakerSize)+'. Please start a new build.');
 
-total+=BRANDS[brand]*count/2;
+total+=pairPrices[brand]*count/2;
 
 const sub=val(build,'sub')==='Yes';
 
@@ -661,7 +644,7 @@ const j=await r.json();
 
 if(!r.ok)
 throw new Error(
-j.message||
+(j.details?.[0]?.description || j.message)||
 'Unable to create PayPal order.'
 );
 
@@ -730,7 +713,7 @@ const j=await r.json();
 
 if(!r.ok)
 throw new Error(
-j.message||
+(j.details?.[0]?.description || j.message)||
 'Payment capture failed.'
 );
 
@@ -787,7 +770,7 @@ const j=await r.json();
 
 if(!r.ok)
 throw new Error(
-j.message||
+(j.details?.[0]?.description || j.message)||
 'Payment capture failed.'
 );
 
