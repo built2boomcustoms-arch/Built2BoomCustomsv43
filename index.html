@@ -67,8 +67,7 @@ header{align-items:center;gap:14px;flex-wrap:wrap}header nav{display:flex;flex-w
 <div class="card questions-card"><div class="question-columns"><div class="question-list">
 
 <div class="step"><h3>1. Box Size</h3><div class="options case-options">
-<button class="option active" data-group="case" data-value="1800" data-price="15"><span class="case-title">Small — $15</span><span class="case-dims">9.25 × 7.5 × 4.375 in</span></button>
-<button class="option" data-group="case" data-value="2800" data-price="30"><span class="case-title">Small Medium — $30</span><span class="case-dims">13.5 × 11.375 × 6 in</span></button>
+<button class="option active" data-group="case" data-value="2800" data-price="30"><span class="case-title">Small Medium — $30</span><span class="case-dims">13.5 × 11.375 × 6 in</span></button>
 <button class="option" data-group="case" data-value="3800" data-price="40"><span class="case-title">Medium — $40</span><span class="case-dims">16.5 × 13 × 6.75 in</span></button>
 <button class="option" data-group="case" data-value="4800" data-price="60"><span class="case-title">Largeish — $60</span><span class="case-dims">20.3125 × 15.5 × 7.375 in</span></button>
 <button class="option" data-group="case" data-value="5800" data-price="90"><span class="case-title">Large on Wheels — $90</span><span class="case-dims">21.875 × 13.75 × 9 in</span><span class="case-wheels">Wheels</span></button>
@@ -170,7 +169,7 @@ header{align-items:center;gap:14px;flex-wrap:wrap}header nav{display:flex;flex-w
 </div></div></div>
 
 <div class="card summary">
-<div class="summary-visual"><img id="buildCaseImage" src="case_1800.png" alt="Small closed case"></div>
+<div class="summary-visual"><img id="buildCaseImage" src="case_2800.png" alt="Small Medium closed case"></div>
 <h3>Your Build</h3>
 <div id="warning" class="warning"></div>
 <div id="summaryLines"></div>
@@ -195,7 +194,7 @@ const base=0;
 function getBuildPayload(){
   const groups=['case','color','customColor','sub','subCount','subBrand','subLocation','subSize','count','tweeters','power','otherPower','batteryVoltage','brand','size','extra','customLogoText','customLogoFont','customLogoLocation'];
   const selections={};
-  groups.forEach(key=>{ if(state[key] && state[key].value !== '') selections[key]={value:state[key].value,price:Number(state[key].price||0)}; });
+  groups.forEach(key=>{ const chosen=state[key] || getDefault(key); if(chosen && chosen.value !== '') selections[key]={value:chosen.value,price:Number(chosen.price||0)}; });
   const totalText=document.getElementById('total')?.textContent || '$0';
   return {selections,total:Number(totalText.replace(/[^0-9.]/g,''))||0};
 }
@@ -292,7 +291,7 @@ function updateBrandPricing(){
 
 function updateSpeakerOptions(){
   const caseValue=(state.case||getDefault('case')).value;
-  const baseCfg=speakerConfigs[caseValue]||speakerConfigs['1800'];
+  const baseCfg=speakerConfigs[caseValue]||speakerConfigs['2800'];
   let cfg={counts:baseCfg.counts.slice(),sizes:baseCfg.sizes.slice(),tweeters:baseCfg.tweeters.slice()};
   const twoSubs=state.subCount && state.subCount.value==='2 Subwoofers';
   const insideSubs=!state.subLocation || state.subLocation.value==='Inside Box';
@@ -374,7 +373,7 @@ function updateSubwoofer(){
 
   const subCountNum=state.subCount?.value==='2 Subwoofers'?2:1;
 
-  const sizes=subwooferSizes[caseValue]||subwooferSizes['1800'];
+  const sizes=subwooferSizes[caseValue]||subwooferSizes['2800'];
   const allowOutside=!['1800','2800'].includes(caseValue);
   const outside=inline.querySelector('[data-value="Outside Box"]');
   outside.style.display=allowOutside?'block':'none';
@@ -420,7 +419,7 @@ const caseInfo={
 
 function updateColorOptions(){
   const caseValue=(state.case||getDefault('case')).value;
-  const info=caseInfo[caseValue]||caseInfo['1800'];
+  const info=caseInfo[caseValue]||caseInfo['2800'];
   const box=document.getElementById('colorOptions');
   const current=state.color&&(info.colors.includes(state.color.value)||state.color.value==='Custom')?state.color.value:info.colors[0];
   state.color={value:current,price:current==='Custom'?25:0};
@@ -442,7 +441,7 @@ function updateColorOptions(){
 
 function openCaseModal(){
   const caseValue=(state.case||getDefault('case')).value;
-  const info=caseInfo[caseValue]||caseInfo['1800'];
+  const info=caseInfo[caseValue]||caseInfo['2800'];
   document.getElementById('caseModalImage').src=info.image;
   document.getElementById('caseModalImage').alt=`${info.name} closed case`;
   document.getElementById('caseModalTitle').textContent=info.name;
@@ -458,7 +457,7 @@ function closeCaseModal(){
 
 function render(){
   const buildCase=(state.case||getDefault('case')).value;
-  const buildInfo=caseInfo[buildCase]||caseInfo['1800'];
+  const buildInfo=caseInfo[buildCase]||caseInfo['2800'];
   const buildImage=document.getElementById('buildCaseImage');
   if(buildImage){
     buildImage.src=buildInfo.image;
@@ -608,7 +607,7 @@ document.getElementById('q9SubSizeChoices').addEventListener('click',e=>{
   const btn=e.target.closest('.q9-choice');
   if(!btn) return;
   const caseValue=(state.case||getDefault('case')).value;
-  const sizes=subwooferSizes[caseValue]||subwooferSizes['1800'];
+  const sizes=subwooferSizes[caseValue]||subwooferSizes['2800'];
   const choice=sizes[Number(btn.dataset.q9Index)];
   if(!choice) return;
   chooseSubSize(choice[0], choice[1]);
