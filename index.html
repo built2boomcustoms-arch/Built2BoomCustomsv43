@@ -85,14 +85,29 @@ h2{font-size:38px;margin:0 0 8px}.muted{color:#9da3aa;line-height:1.6}
 
 <div class="step"><h3>6. Power System</h3><div class="options">
 <button class="option active" data-group="power" data-value="Include Battery and Charger Bundle" data-price="60">Include Battery and Charger Bundle — $60</button>
-<button class="option" data-group="power" data-value="DeWalt 20V" data-price="15">DeWalt 20V — $15</button>
+<button class="option" data-group="power" data-value="DeWalt" data-price="15">DeWalt — $15</button>
 <button class="option" data-group="power" data-value="Milwaukee M18" data-price="15">Milwaukee M18 — $15</button>
-<button class="option" data-group="power" data-value="Hart 20V" data-price="15">Hart 20V — $15</button>
-<button class="option" data-group="power" data-value="Ryobi 18V" data-price="15">Ryobi 18V — $15</button>
-<button class="option" data-group="power" data-value="Makita 18V" data-price="15">Makita 18V — $15</button>
+<button class="option" data-group="power" data-value="Hart" data-price="15">Hart — $15</button>
+<button class="option" data-group="power" data-value="Ryobi" data-price="15">Ryobi — $15</button>
+<button class="option" data-group="power" data-value="Makita" data-price="15">Makita — $15</button>
+<button class="option" data-group="power" data-value="Bauer" data-price="15">Bauer — $15</button>
+<button class="option" data-group="power" data-value="Hercules" data-price="15">Hercules — $15</button>
+<button class="option" data-group="power" data-value="Bosch" data-price="15">Bosch — $15</button>
+<button class="option" data-group="power" data-value="Milwaukee M12" data-price="15">Milwaukee M12 — $15</button>
 <button class="option" data-group="power" data-value="Other" data-price="15">Other — $15</button>
 </div>
 <div id="otherPowerWrap" style="display:none;margin-top:12px"><input id="otherPower" type="text" placeholder="Enter battery/power brand" style="width:100%;padding:14px;border-radius:10px;border:1px solid #30343a;background:#0d1013;color:#eee"></div>
+<div id="batteryVoltageWrap" class="inline-sub" style="display:none">
+  <h4>What voltage does your battery use?</h4>
+  <div class="note" style="margin-bottom:10px">Battery voltages vary by brand and model. Many common power-tool batteries are rated at 12V, 18V, or 20V. If you're unsure, please email a clear photo of your battery's label to <a href="mailto:built2boomcustoms@gmail.com?subject=Battery%20Voltage%20Assistance" style="color:#fff">built2boomcustoms@gmail.com</a> before placing your order. Our team will be happy to help identify the correct voltage.</div>
+  <div class="options" id="batteryVoltageOptions">
+    <button type="button" class="option" data-voltage="12V">12V</button>
+    <button type="button" class="option" data-voltage="18V">18V</button>
+    <button type="button" class="option" data-voltage="20V">20V</button>
+    <button type="button" class="option" data-voltage="Other">Other Voltage</button>
+  </div>
+  <div id="otherVoltageWrap" style="display:none;margin-top:10px"><input id="otherVoltage" type="text" placeholder="Enter battery voltage (e.g., 24V)" style="width:100%;padding:14px;border-radius:10px;border:1px solid #30343a;background:#0d1013;color:#eee"></div>
+</div>
 </div>
 
 <div class="step"><h3>7. Speaker Size</h3><div class="options" id="speakerSizeOptions"></div></div>
@@ -168,7 +183,7 @@ const state={};
 const base=0;
 
 function getBuildPayload(){
-  const groups=['case','color','customColor','sub','subCount','subBrand','subLocation','subSize','count','tweeters','power','otherPower','brand','size','extra','customLogoText','customLogoFont','customLogoLocation'];
+  const groups=['case','color','customColor','sub','subCount','subBrand','subLocation','subSize','count','tweeters','power','otherPower','batteryVoltage','brand','size','extra','customLogoText','customLogoFont','customLogoLocation'];
   const selections={};
   groups.forEach(key=>{ if(state[key] && state[key].value !== '') selections[key]={value:state[key].value,price:Number(state[key].price||0)}; });
   const totalText=document.getElementById('total')?.textContent || '$0';
@@ -176,6 +191,12 @@ function getBuildPayload(){
 }
 
 function startCheckout(){
+  const power=(state.power||getDefault('power'))?.value;
+  if(power && power!=='Include Battery and Charger Bundle' && (!state.batteryVoltage || state.batteryVoltage.value==='Other')){
+    alert('Please select or enter your battery voltage before placing your order.');
+    document.getElementById('batteryVoltageWrap').scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
   const build=getBuildPayload();
   sessionStorage.setItem('b2b_build',JSON.stringify(build));
   window.location.href='payment.html';
@@ -435,6 +456,13 @@ function render(){
   updateSubwoofer();
   updateSpeakerOptions();
   updateColorOptions();
+  const selectedPower=(state.power||getDefault('power'))?.value;
+  const voltageVisible=!!selectedPower && selectedPower!=='Include Battery and Charger Bundle';
+  document.getElementById('batteryVoltageWrap').style.display=voltageVisible?'block':'none';
+  document.getElementById('otherPowerWrap').style.display=selectedPower==='Other'?'block':'none';
+  if(!voltageVisible) delete state.batteryVoltage;
+  document.querySelectorAll('#batteryVoltageOptions [data-voltage]').forEach(btn=>btn.classList.toggle('active',btn.dataset.voltage===(state.batteryVoltage?.value==='Other' || (state.batteryVoltage?.value||'').startsWith('Other:')?'Other':state.batteryVoltage?.value)));
+  document.getElementById('otherVoltageWrap').style.display=(state.batteryVoltage?.value==='Other'||(state.batteryVoltage?.value||'').startsWith('Other:'))?'block':'none';
   const logoWrap=document.getElementById('logoWrap');
   const extraValue=(state.extra||getDefault('extra'))?.value||'None';
   logoWrap.style.display=extraValue.includes('Custom Name / Logo')?'block':'none';
@@ -444,12 +472,13 @@ function render(){
   if(!multiSpeakers && state.customLogoLocation?.value==='Below and Between the Speakers'){delete state.customLogoLocation;logoLocation.value='';}
   const groups=[
     ['case','Box Size'],['color','Color'],['count','Speakers'],['sub','Subwoofer'],['subCount','Subwoofers'],['subBrand','Subwoofer Brand'],['subLocation','Sub Location'],['tweeters','Tweeters'],['size','Speaker Size'],
-    ['power','Power System'],['otherPower','Custom Power Brand'],['brand','Speaker Brand'],['customColor','Custom Color'],['subSize','Sub Size'],['extra','Extras'],['customLogoText','Logo Text'],['customLogoFont','Logo Font'],['customLogoLocation','Logo Location']
+    ['power','Power System'],['otherPower','Custom Power Brand'],['batteryVoltage','Battery Voltage'],['brand','Speaker Brand'],['customColor','Custom Color'],['subSize','Sub Size'],['extra','Extras'],['customLogoText','Logo Text'],['customLogoFont','Logo Font'],['customLogoLocation','Logo Location']
   ];
   let total=base, html='';
   groups.forEach(([key,label])=>{
     if((key==='subLocation'||key==='subSize'||key==='subCount'||key==='subBrand') && (!state.sub || state.sub.value!=='Yes')) return;
         if(key==='otherPower' && (!state.power || state.power.value!=='Other')) return;
+    if(key==='batteryVoltage' && (!state.power || state.power.value==='Include Battery and Charger Bundle')) return;
     if(key==='customColor' && (!state.color || state.color.value!=='Custom')) return;
     if(['customLogoText','customLogoFont','customLogoLocation'].includes(key) && (!state.extra || !state.extra.value.includes('Custom Name / Logo'))) return;
     const x=state[key]||getDefault(key); if(!x || x.value==='')return;
@@ -556,6 +585,8 @@ document.querySelectorAll('.option[data-group]:not([data-group="extra"])').forEa
     if(group==='power'){
       document.getElementById('otherPowerWrap').style.display=btn.dataset.value==='Other'?'block':'none';
       if(btn.dataset.value!=='Other') delete state.otherPower;
+      delete state.batteryVoltage;
+      document.getElementById('otherVoltage').value='';
     }
     render();
   });
@@ -600,6 +631,16 @@ document.getElementById('extrasOptions').addEventListener('click',e=>{
   render();
 });
 
+document.querySelectorAll('#batteryVoltageOptions [data-voltage]').forEach(btn=>btn.addEventListener('click',()=>{
+  const v=btn.dataset.voltage;
+  state.batteryVoltage={value:v==='Other'?'Other':v,price:0};
+  if(v!=='Other') document.getElementById('otherVoltage').value='';
+  render();
+}));
+document.getElementById('otherVoltage').addEventListener('input',e=>{
+  state.batteryVoltage={value:e.target.value.trim()?'Other: '+e.target.value.trim():'Other',price:0};
+  render();
+});
 document.getElementById('otherPower').addEventListener('input',e=>{
   state.otherPower={value:e.target.value||'Other',price:0};
   render();
