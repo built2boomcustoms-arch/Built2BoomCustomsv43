@@ -273,6 +273,13 @@ async function accessToken() {
   };
 }
 
+// Public PayPal SDK configuration (client ID is safe to expose; secret is not).
+app.get('/api/paypal/config', (req, res) => {
+  const clientId = process.env.PAYPAL_CLIENT_ID;
+  if (!clientId) return res.status(503).json({ error: 'PayPal is not configured.' });
+  res.json({ clientId });
+});
+
 // CREATE PAYPAL ORDER
 app.post('/api/paypal/orders', async (req, res) => {
   try {
@@ -363,19 +370,8 @@ app.post('/api/paypal/orders', async (req, res) => {
             }
           }
         }
-      ],
+      ]
 
-      payment_source: {
-        paypal: {
-          experience_context: {
-            brand_name: 'Built2BoomCustoms',
-            shipping_preference: 'SET_PROVIDED_ADDRESS',
-            user_action: 'PAY_NOW',
-            return_url: `${site}/api/paypal/capture`,
-            cancel_url: `${site}/payment.html`
-          }
-        }
-      }
     };
 
     const response = await fetch(
@@ -424,6 +420,28 @@ app.post('/api/paypal/orders', async (req, res) => {
     res.status(400).json({
       error: error.message || 'Unable to create payment.'
     });
+  }
+});
+
+// Capture an approved order from PayPal SDK buttons.
+app.post('/api/paypal/capture', async (req, res) => {
+  try {
+    const orderID = req.body?.orderID;
+    if (typeof orderID !== 'string' || !/^[A-Z0-9-]{8,40}$/i.test(orderID)) {
+      return res.status(400).json({ error: 'Invalid PayPal order ID.' });
+    }
+    const { token, base } = await accessToken();
+    const response = await fetch(
+      `${base}/v2/checkout/orders/${encodeURIComponent(orderID)}/capture`,
+      { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' } }
+    );
+    const result = await response.json();
+    if (!response.ok || result.status !== 'COMPLETED') {
+      throw new Error(result.message || 'Payment capture failed.');
+    }
+    res.json({ status: result.status, orderID });
+  } catch (error) {
+    res.status(400).json({ error: error.message || 'Unable to capture payment.' });
   }
 });
 
