@@ -38,6 +38,7 @@ h2{margin-top:0}
 .promo-message{font-size:13px;margin:9px 0 0;min-height:18px}
 .promo-success{color:#76e0a3}
 .promo-error{color:#ffbcbc}
+#paymentButtons>div{margin:0 0 12px;min-height:0}
 @media(max-width:800px){
 .grid{grid-template-columns:1fr}
 .fields{grid-template-columns:1fr}
@@ -120,7 +121,14 @@ Payment information is securely handled by PayPal. Built2BoomCustoms does not st
 </div>
 </div>
 
-<button class="btn" id="pay">CONTINUE TO SECURE PAYMENT →</button>
+<h2 style="margin:25px 0 14px">Choose how you want to pay</h2>
+<div id="paymentButtons" aria-label="Available PayPal payment methods">
+  <div id="paypal-button"></div>
+  <div id="venmo-button"></div>
+  <div id="paylater-button"></div>
+  <div id="card-button"></div>
+</div>
+<p class="secure" style="text-align:center">Powered by PayPal. Only eligible payment methods will appear.</p>
 <div class="error" id="error"></div>
 </section>
 
@@ -236,7 +244,7 @@ promoInput.addEventListener('input', () => {
 
 if(!data){
   buildEl.innerHTML = '<p class="muted">No build was found. Go back to the builder and create one.</p>';
-  document.getElementById('pay').disabled = true;
+  document.getElementById('paymentButtons').textContent = 'Create a build before paying.';
 } else {
   const labels = {
     case:'Box Size',
@@ -287,65 +295,83 @@ if(!data){
   updateTotals();
 }
 
-document.getElementById('pay').onclick = async () => {
-  const ids = ['name','email','phone','address1','city','state','zip'];
-
-  const vals = Object.fromEntries(
-    ids.map(id => [id, document.getElementById(id).value.trim()])
-  );
-
-  const err = document.getElementById('error');
-  err.style.display = 'none';
-
-  if(ids.some(id => !vals[id])){
-    err.textContent = 'Please complete all required contact and shipping fields.';
-    err.style.display = 'block';
-    return;
+// PayPal SDK renders real, eligible funding buttons. No fake payment buttons.
+function customerDetails(){
+  const ids=['name','email','phone','address1','city','state','zip'];
+  const vals=Object.fromEntries(ids.map(id=>[id,document.getElementById(id).value.trim()]));
+  if(ids.some(id=>!vals[id])) throw new Error('Please complete all required contact and shipping fields.');
+  if(!/^[A-Za-z]{2}$/.test(vals.state)) throw new Error('Please enter a two-letter state abbreviation.');
+  if(!/^\d{5}(?:-\d{4})?$/.test(vals.zip)) throw new Error('Please enter a valid US ZIP code.');
+  if(!data) throw new Error('Please create your build first.');
+  return {...vals,address2:document.getElementById('address2').value.trim(),country:'US'};
+}
+function showError(message){
+  const err=document.getElementById('error');
+  err.textContent=message;
+  err.style.display='block';
+}
+async function createOrder(){
+  document.getElementById('error').style.display='none';
+  const customer=customerDetails();
+  const response=await fetch('/api/paypal/orders',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({customer,build:data,promoCode:appliedPromoCode})
+  });
+  const out=await response.json();
+  if(!response.ok) throw new Error(out.error||'Unable to create payment.');
+  // The server sets the actual amount. Never silently charge a different total.
+  const displayed=Number(data.total||0)+(appliedPromoCode==='KALVEN'?0:shipCost());
+  if(Math.abs(Number(out.total)-displayed)>0.01){
+    throw new Error('Build price does not match the payment total. Please contact support before paying.');
   }
-
+  return out.orderId;
+}
+async function captureOrder(orderID){
+  const response=await fetch('/api/paypal/capture',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({orderID})
+  });
+  const out=await response.json();
+  if(!response.ok||out.status!=='COMPLETED') throw new Error(out.error||'Payment could not be completed.');
+  window.location.href='/success.html?order_id='+encodeURIComponent(orderID);
+}
+async function loadPaymentButtons(){
   if(!data) return;
-
-  const customer = {
-    ...vals,
-    address2: document.getElementById('address2').value.trim(),
-    country:'US'
-  };
-
-  const btn = document.getElementById('pay');
-  btn.disabled = true;
-  btn.classList.add('loading');
-  btn.textContent = 'OPENING SECURE PAYMENT…';
-
-  try {
-    const r = await fetch('/api/paypal/orders', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        customer,
-        build:data,
-        promoCode:appliedPromoCode
-      })
-    });
-
-    const out = await r.json();
-
-    if(!r.ok){
-      throw new Error(out.error || 'Unable to start payment.');
-    }
-
-    if(out.approveUrl){
-      location.href = out.approveUrl;
-    } else {
-      throw new Error('PayPal did not return a checkout link.');
-    }
-  } catch(e){
-    err.textContent = e.message;
-    err.style.display = 'block';
-    btn.disabled = false;
-    btn.classList.remove('loading');
-    btn.textContent = 'CONTINUE TO SECURE PAYMENT →';
-  }
-};
+  try{
+    const response=await fetch('/api/paypal/config');
+    const config=await response.json();
+    if(!response.ok||!config.clientId) throw new Error(config.error||'PayPal configuration unavailable.');
+    const sdk=document.createElement('script');
+    sdk.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(config.clientId)
+      +'&currency=USD&intent=capture&components=buttons&enable-funding=venmo,paylater,card&disable-funding=applepay,googlepay';
+    sdk.onload=()=>{
+      const options=[
+        {funding:paypal.FUNDING.PAYPAL,id:'paypal-button'},
+        {funding:paypal.FUNDING.VENMO,id:'venmo-button'},
+        {funding:paypal.FUNDING.PAYLATER,id:'paylater-button'},
+        {funding:paypal.FUNDING.CARD,id:'card-button'}
+      ];
+      let shown=0;
+      for(const option of options){
+        const button=paypal.Buttons({
+          fundingSource:option.funding,
+          style:{layout:'vertical',shape:'rect',height:48},
+          createOrder:async()=>{try{return await createOrder()}catch(error){showError(error.message);throw error}},
+          onApprove:async details=>{try{await captureOrder(details.orderID)}catch(error){showError(error.message)}},
+          onError:error=>showError(error?.message||'Unable to process payment.')
+        });
+        if(button.isEligible()){
+          button.render('#'+option.id);
+          shown++;
+        }
+      }
+      if(!shown) showError('No payment methods are available for this device or account.');
+    };
+    sdk.onerror=()=>showError('Could not load PayPal payment buttons. Please refresh the page.');
+    document.head.appendChild(sdk);
+  }catch(error){showError(error.message)}
+}
+loadPaymentButtons();
 </script>
 
 <footer style="border-top:1px solid #222;padding:28px 6%;color:#888;font-size:13px;margin-top:40px">
