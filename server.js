@@ -273,13 +273,6 @@ async function accessToken() {
   };
 }
 
-// Public PayPal SDK configuration (client ID is safe to expose; secret is not).
-app.get('/api/paypal/config', (req, res) => {
-  const clientId = process.env.PAYPAL_CLIENT_ID;
-  if (!clientId) return res.status(503).json({ error: 'PayPal is not configured.' });
-  res.json({ clientId });
-});
-
 // CREATE PAYPAL ORDER
 app.post('/api/paypal/orders', async (req, res) => {
   try {
@@ -309,10 +302,18 @@ app.post('/api/paypal/orders', async (req, res) => {
     const ship = promo.shipping;
     const grand = subtotal + ship;
 
-    const { token, base } = await accessToken();
+    // Require the amount shown at checkout to match the server price.
+    const displayedSubtotal = Number(build.total);
+    if (
+      !Number.isFinite(displayedSubtotal) ||
+      Math.abs(displayedSubtotal - subtotal) > 0.01
+    ) {
+      throw new Error(
+        'The checkout total does not match the build price. Please return to the builder and refresh your build before paying.'
+      );
+    }
 
-    const site = process.env.PUBLIC_URL ||
-      `${req.protocol}://${req.get('host')}`;
+    const { token, base } = await accessToken();
 
     const compact = Object.values(build.selections || {})
       .map(selection => selection.value)
@@ -371,7 +372,6 @@ app.post('/api/paypal/orders', async (req, res) => {
           }
         }
       ]
-
     };
 
     const response = await fetch(
@@ -395,20 +395,8 @@ app.post('/api/paypal/orders', async (req, res) => {
       );
     }
 
-    const approveUrl = result.links?.find(link =>
-      link.rel === 'payer-action' ||
-      link.rel === 'approve'
-    )?.href;
-
-    if (!approveUrl) {
-      throw new Error(
-        'PayPal approval link was not returned.'
-      );
-    }
-
     res.json({
       orderId: result.id,
-      approveUrl,
       subtotal,
       shipping: ship,
       shippingDiscount: promo.discount,
@@ -423,32 +411,26 @@ app.post('/api/paypal/orders', async (req, res) => {
   }
 });
 
-// Capture an approved order from PayPal SDK buttons.
+// PUBLIC PAYPAL CLIENT CONFIG FOR JS SDK
+app.get('/api/paypal/config', (req, res) => {
+  const clientId = process.env.PAYPAL_CLIENT_ID;
+
+  if (!clientId) {
+    return res.status(503).json({
+      error: 'PayPal is not configured.'
+    });
+  }
+
+  res.json({
+    clientId,
+    currency: 'USD'
+  });
+});
+
+// CAPTURE PAYPAL PAYMENT FROM JS SDK
 app.post('/api/paypal/capture', async (req, res) => {
   try {
     const orderID = req.body?.orderID;
-    if (typeof orderID !== 'string' || !/^[A-Z0-9-]{8,40}$/i.test(orderID)) {
-      return res.status(400).json({ error: 'Invalid PayPal order ID.' });
-    }
-    const { token, base } = await accessToken();
-    const response = await fetch(
-      `${base}/v2/checkout/orders/${encodeURIComponent(orderID)}/capture`,
-      { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' } }
-    );
-    const result = await response.json();
-    if (!response.ok || result.status !== 'COMPLETED') {
-      throw new Error(result.message || 'Payment capture failed.');
-    }
-    res.json({ status: result.status, orderID });
-  } catch (error) {
-    res.status(400).json({ error: error.message || 'Unable to capture payment.' });
-  }
-});
-
-// CAPTURE PAYPAL PAYMENT
-app.get('/api/paypal/capture', async (req, res) => {
-  try {
-    const orderID = req.query.token;
 
     if (!orderID) {
       throw new Error('Missing PayPal order ID.');
@@ -475,14 +457,17 @@ app.get('/api/paypal/capture', async (req, res) => {
       );
     }
 
-    res.redirect(
-      '/success.html?order_id=' + encodeURIComponent(orderID)
-    );
+    res.json({
+      success: true,
+      orderId: orderID,
+      status: result.status,
+      redirectUrl: '/success.html?order_id=' + encodeURIComponent(orderID)
+    });
 
   } catch (error) {
-    res.status(400).send(
-      'Payment could not be completed: ' + error.message
-    );
+    res.status(400).json({
+      error: error.message || 'Payment capture failed.'
+    });
   }
 });
 
