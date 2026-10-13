@@ -118,7 +118,7 @@ then continue to secure payment.
 <div class="paybox">
 <strong>Secure Payment Methods</strong>
 <div class="methods">
-PayPal • Venmo • PayPal Pay Later • Debit / Credit Card
+PayPal • PayPal Pay Later • Debit / Credit Card
 </div>
 <div class="secure">
 Payment methods are provided by PayPal and may vary based on
@@ -134,7 +134,6 @@ Built2BoomCustoms does not store card numbers.
 
 <div id="paymentButtons" aria-label="Available PayPal payment methods">
   <div id="paypal-button"></div>
-  <div id="venmo-button"></div>
   <div id="paylater-button"></div>
   <div id="card-button"></div>
 </div>
@@ -441,7 +440,6 @@ async function loadPaymentButtons(){
 
         const options = [
           {funding:paypal.FUNDING.PAYPAL,id:'paypal-button'},
-          {funding:paypal.FUNDING.VENMO,id:'venmo-button'},
           {funding:paypal.FUNDING.PAYLATER,id:'paylater-button'},
           {funding:paypal.FUNDING.CARD,id:'card-button'}
         ];
