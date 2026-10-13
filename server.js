@@ -71,12 +71,18 @@ const SUB_BRANDS = {
 };
 
 // POWER SYSTEMS
+// Supports both short and long names from the builder
 const POWER = {
   'Include Battery and Charger Bundle': 60,
+  'DeWalt': 15,
   'DeWalt 20V': 15,
+  'Milwaukee': 15,
   'Milwaukee M18': 15,
+  'Hart': 15,
   'Hart 20V': 15,
+  'Ryobi': 15,
   'Ryobi 18V': 15,
+  'Makita': 15,
   'Makita 18V': 15,
   'Other': 15
 };
@@ -98,7 +104,7 @@ function calculate(build) {
 
   const box = caseCode(build);
 
-  if (!(box in BOX)) {
+  if (!Object.prototype.hasOwnProperty.call(BOX, box)) {
     throw new Error('Invalid box selection.');
   }
 
@@ -284,10 +290,10 @@ app.post('/api/paypal/orders', async (req, res) => {
       );
     }
 
-    // SERVER-SIDE PRICE CALCULATION
+    // CALCULATE PRICES ON SERVER
     const subtotal = calculate(build);
 
-    // APPLY KALVEN OR OTHER VALID PROMO
+    // APPLY PROMO CODE
     const promo = applyPromo(build, promoCode);
 
     const ship = promo.shipping;
