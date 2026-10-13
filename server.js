@@ -71,9 +71,10 @@ const SUB_BRANDS = {
 };
 
 // POWER SYSTEMS
-// Supports both short and long names from the builder
 const POWER = {
   'Include Battery and Charger Bundle': 60,
+  'Include Battery & Charger': 60,
+  'Battery and Charger Bundle': 60,
   'DeWalt': 15,
   'DeWalt 20V': 15,
   'Milwaukee': 15,
@@ -84,6 +85,8 @@ const POWER = {
   'Ryobi 18V': 15,
   'Makita': 15,
   'Makita 18V': 15,
+  'Hercules': 15,
+  'Hercules 20V': 15,
   'Other': 15
 };
 
