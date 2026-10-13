@@ -9,7 +9,19 @@ app.use(express.static(__dirname));
 
 const BOX={1800:15,2800:30,3800:40,4800:60,5800:90,9800:150};
 const SHIPPING={1800:15,2800:20,3800:25,4800:35,5800:50,9800:95};
+const PROMO_CODES = {
+  KALVEN: { freeShipping: true }
+};
 
+function applyPromo(build, promoCode) {
+  const code = String(promoCode || '').trim().toUpperCase();
+  const promo = PROMO_CODES[code];
+
+  return {
+    shipping: promo?.freeShipping ? 0 : shipping(build),
+    appliedCode: promo ? code : null
+  };
+}
 // Pricing synchronized with V46 builder; keep these server-side for payment integrity.
 const SPEAKER_PAIR_PRICES={
   '6.5"': {"Customer Supplied": 0, "Kenwood": 40, "Pyle": 45, "Skar Audio": 60, "Pioneer": 50, "Boss Audio": 50, "DS18": 85, "Memphis Audio": 105, "Kicker": 80, "JBL": 115, "Infinity": 115, "Rockford Fosgate": 90, "Wet Sounds": 150, "JL Audio": 180, "Scosche": 50},
