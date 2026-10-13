@@ -427,8 +427,7 @@ async function loadPaymentButtons(){
       'client-id': config.clientId,
       currency: 'USD',
       intent: 'capture',
-      components: 'buttons',
-      'enable-funding': 'venmo,paylater'
+      components: 'buttons'
     });
 
     sdk.src =

@@ -34,61 +34,24 @@ const PROMO_CODES = {
   }
 };
 
-// SPEAKER BRANDS
-const BRANDS = {
-  'Customer Supplied': 0,
-  'Kenwood': 40,
-  'Pyle': 40,
-  'Skar Audio': 50,
-  'Pioneer': 50,
-  'Boss Audio': 50,
-  'DS18': 60,
-  'Memphis Audio': 75,
-  'Kicker': 80,
-  'JBL': 80,
-  'Infinity': 80,
-  'Rockford Fosgate': 90,
-  'Wet Sounds': 150,
-  'JL Audio': 180
+// Prices are synchronized with the active builder in index.html.
+// Pair prices depend on speaker size. Keep these tables aligned when editing the builder.
+const SPEAKER_PAIRS = {
+  '6.5"': {'Customer Supplied':0,Kenwood:40,Pyle:45,'Skar Audio':60,Pioneer:50,'Boss Audio':50,DS18:85,'Memphis Audio':105,Kicker:80,JBL:115,Infinity:115,'Rockford Fosgate':90,'Wet Sounds':150,'JL Audio':180,Scosche:50},
+  '6×9': {'Customer Supplied':0,Kenwood:60,Pyle:65,'Skar Audio':75,Pioneer:45,'Boss Audio':55,DS18:85,'Memphis Audio':110,Kicker:100,JBL:115,Infinity:130,'Rockford Fosgate':115,'Wet Sounds':650,'JL Audio':200,Scosche:60}
 };
-
-// SUBWOOFER BRANDS
-const SUB_BRANDS = {
-  'Kicker': 120,
-  'Rockford Fosgate': 130,
-  'JBL': 110,
-  'DS18': 100,
-  'Skar Audio': 90,
-  'Memphis Audio': 130,
-  'Wet Sounds': 250,
-  'JL Audio': 250,
-  'Kenwood': 100,
-  'Pioneer': 100,
-  'Infinity': 110,
-  'Boss Audio': 50,
-  'Pyle': 40,
-  'Customer Supplied': 0
+const SUB_BRANDS = {'Customer Supplied':0,Generic:20,Pyle:40,'Boss Audio':50,'Skar Audio':90,DS18:100,Kenwood:100,Pioneer:100,JBL:110,Infinity:110,Kicker:100,'Rockford Fosgate':130,'Memphis Audio':130,'Wet Sounds':250,'JL Audio':250};
+const SUB_BY_SIZE = {
+  '4"':['Customer Supplied','Generic','Pyle'],
+  '5"':['Customer Supplied','Generic','Pyle'],
+  '6.5"':['Customer Supplied','Pyle','Skar Audio','DS18','Memphis Audio','JL Audio'],
+  '8"':['Customer Supplied','Pyle','Boss Audio','Skar Audio','DS18','Kenwood','Pioneer','JBL','Infinity','Kicker','Rockford Fosgate','Memphis Audio','Wet Sounds','JL Audio'],
+  '10"':['Customer Supplied','Pyle','Boss Audio','Skar Audio','DS18','Kenwood','Pioneer','JBL','Infinity','Kicker','Rockford Fosgate','Memphis Audio','Wet Sounds','JL Audio']
 };
-
-// POWER SYSTEMS
-const POWER = {
-  'Include Battery and Charger Bundle': 60,
-  'Include Battery & Charger': 60,
-  'Battery and Charger Bundle': 60,
-  'DeWalt': 15,
-  'DeWalt 20V': 15,
-  'Milwaukee': 15,
-  'Milwaukee M18': 15,
-  'Hart': 15,
-  'Hart 20V': 15,
-  'Ryobi': 15,
-  'Ryobi 18V': 15,
-  'Makita': 15,
-  'Makita 18V': 15,
-  'Hercules': 15,
-  'Hercules 20V': 15,
-  'Other': 15
-};
+const POWER = {'Include Battery and Charger Bundle':60,DeWalt:15,'Milwaukee M18':15,Hart:15,Ryobi:15,Makita:15,Bauer:15,Hercules:15,Bosch:15,'Milwaukee M12':15,Other:15};
+const TWEETER_PRICES = {0:0,1:10,2:20,4:35,6:50,8:65};
+const ALLOWED_COUNTS = {'2800':[1],'3800':[1,2],'4800':[1,2],'5800':[1,2,3,4],'9800':[2,4,6,8]};
+const SUB_SIZES = {'2800':['4"','5"','6.5"'],'3800':['4"','5"','6.5"','8"'],'4800':['4"','5"','6.5"','8"'],'5800':['8"','10"'],'9800':['8"','10"']};
 
 // GET BUILD SELECTION
 function val(build, key) {
@@ -101,87 +64,50 @@ function caseCode(build) {
     .match(/1800|2800|3800|4800|5800|9800/)?.[0] || '';
 }
 
-// CALCULATE BUILD PRICE
+// Recompute price from whitelisted selections, never client-provided price fields.
 function calculate(build) {
-  let total = 0;
-
   const box = caseCode(build);
-
-  if (!Object.prototype.hasOwnProperty.call(BOX, box)) {
-    throw new Error('Invalid box selection.');
+  if (!Object.prototype.hasOwnProperty.call(ALLOWED_COUNTS,box)) throw new Error('Invalid box selection.');
+  const count = Number(String(val(build,'count')).match(/\d+/)?.[0] || 0);
+  const hasSub = val(build,'sub') === 'Yes';
+  if (!['Yes','No Subwoofer'].includes(val(build,'sub'))) throw new Error('Invalid subwoofer selection.');
+  const subCount = hasSub ? (val(build,'subCount')==='2 Subwoofers' ? 2 : 1) : 0;
+  const location = val(build,'subLocation');
+  let allowedCounts = ALLOWED_COUNTS[box];
+  if (hasSub && box==='5800') allowedCounts=allowedCounts.filter(n=>n<=2);
+  if (hasSub && ['3800','4800'].includes(box) && location==='Outside Box') allowedCounts=allowedCounts.filter(n=>n<=1);
+  if (hasSub && box==='9800' && subCount===2) allowedCounts=allowedCounts.filter(n=>n<=(location==='Outside Box'?4:6));
+  if (!allowedCounts.includes(count)) throw new Error('Invalid speaker count for this configuration.');
+  if (subCount===2 && box!=='9800') throw new Error('Two subwoofers require Big Daddy.');
+  const size=val(build,'size');
+  if (!Object.prototype.hasOwnProperty.call(SPEAKER_PAIRS,size)) throw new Error('Invalid speaker size.');
+  const brand=val(build,'brand');
+  if (!Object.prototype.hasOwnProperty.call(SPEAKER_PAIRS[size],brand)) throw new Error('Invalid speaker brand.');
+  const color=val(build,'color');
+  if (!color) throw new Error('Missing box color.');
+  const power=val(build,'power');
+  if (!Object.prototype.hasOwnProperty.call(POWER,power)) throw new Error('Invalid power selection.');
+  let total=BOX[box]+(color==='Custom'?25:0)+SPEAKER_PAIRS[size][brand]*count/2+POWER[power];
+  const tweeters=Number(String(val(build,'tweeters')).match(/\d+/)?.[0] || 0);
+  if (!Object.prototype.hasOwnProperty.call(TWEETER_PRICES,tweeters)) throw new Error('Invalid tweeter selection.');
+  if (['2800','3800','4800'].includes(box) && tweeters>4 || box==='5800' && tweeters>6 || box==='9800' && subCount===2 && tweeters>2) throw new Error('Too many tweeters for this build.');
+  total+=TWEETER_PRICES[tweeters];
+  if (hasSub) {
+    if (!['Inside Box','Outside Box'].includes(location)) throw new Error('Invalid subwoofer location.');
+    if (box==='2800' && location==='Outside Box') throw new Error('Subwoofer must be inside this box.');
+    const subSize=val(build,'subSize');
+    if (!SUB_SIZES[box].includes(subSize)) throw new Error('Invalid subwoofer size.');
+    const subBrand=val(build,'subBrand');
+    if (!SUB_BY_SIZE[subSize]?.includes(subBrand)) throw new Error('Invalid subwoofer brand for this size.');
+    total+=SUB_BRANDS[subBrand]*subCount;
   }
-
-  total += BOX[box];
-
-  if (val(build, 'color') === 'Custom') {
-    total += 25;
-  }
-
-  const count = Number(
-    (String(val(build, 'count')).match(/\d+/) || ['0'])[0]
-  );
-
-  if (!count) {
-    throw new Error('Invalid speaker count.');
-  }
-
-  const brand = val(build, 'brand');
-
-  if (!Object.prototype.hasOwnProperty.call(BRANDS, brand)) {
-    throw new Error('Invalid speaker brand.');
-  }
-
-  total += BRANDS[brand] * count / 2;
-
-  const sub = val(build, 'sub') === 'Yes';
-
-  const subCount = sub
-    ? (val(build, 'subCount') === '2 Subwoofers' ? 2 : 1)
-    : 0;
-
-  if (sub) {
-    const subBrand = val(build, 'subBrand');
-
-    if (!Object.prototype.hasOwnProperty.call(SUB_BRANDS, subBrand)) {
-      throw new Error('Invalid subwoofer brand.');
-    }
-
-    total += SUB_BRANDS[subBrand] * subCount;
-  }
-
-  const power = val(build, 'power');
-
-  if (!Object.prototype.hasOwnProperty.call(POWER, power)) {
-    throw new Error('Invalid power selection.');
-  }
-
-  total += POWER[power];
-
-  const tweeters = Number(
-    (String(val(build, 'tweeters')).match(/\d+/) || ['0'])[0]
-  );
-
-  total += tweeters * 10;
-
-  const extra = val(build, 'extra');
-
-  const extras = extra === 'None'
-    ? []
-    : String(extra).split(' + ').filter(Boolean);
-
-  if (extras.includes('Battery Voltage and Charging Port')) {
-    total += 25;
-  }
-
-  if (extras.includes('Custom Name / Logo')) {
-    total += 20;
-  }
-
-  // AMPLIFIER AND SUBWOOFER INSTALLATION
-  total += Math.ceil(count / 2) * 25;
-  total += subCount * 25;
-
-  return Math.round(total);
+  const extra=val(build,'extra');
+  const extras=extra==='None' || !extra ? [] : String(extra).split(' + ').filter(Boolean);
+  if (new Set(extras).size!==extras.length || extras.some(x=>!['Battery Voltage and Charging Port','Custom Name / Logo'].includes(x))) throw new Error('Invalid extras selection.');
+  if (extras.includes('Battery Voltage and Charging Port')) total+=25;
+  if (extras.includes('Custom Name / Logo')) total+=20;
+  total+=Math.ceil(count/2)*25+subCount*25;
+  return Math.round(total*100)/100;
 }
 
 // CALCULATE NORMAL SHIPPING
