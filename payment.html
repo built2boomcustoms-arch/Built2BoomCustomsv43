@@ -25,6 +25,7 @@ h2{margin-top:0}
 .totals{margin-top:12px}
 .total{display:flex;justify-content:space-between;font-size:27px;font-weight:900;padding-top:14px}
 .back{display:inline-block;margin-bottom:22px;text-decoration:none;color:#c8ccd1}
+.field input.missing-field{border-color:#ff8888;box-shadow:0 0 0 2px rgba(255,136,136,.18)}
 .error{display:none;background:#3a1616;border:1px solid #743333;color:#ffbcbc;padding:12px;border-radius:10px;margin-top:14px}
 .paybox{margin-top:18px;padding:16px;border:1px solid #30343a;border-radius:12px;background:#0d1013}
 .paybox strong{display:block;margin-bottom:6px}
@@ -315,6 +316,11 @@ if(!data){
   updateTotals();
 }
 
+// Remove the field warning once the customer starts correcting it.
+document.querySelectorAll('.fields input').forEach(input => {
+  input.addEventListener('input', () => input.classList.remove('missing-field'));
+});
+
 // Validate customer shipping information
 function customerDetails(){
   const ids = ['name','email','phone','address1','city','state','zip'];
@@ -323,17 +329,28 @@ function customerDetails(){
     ids.map(id => [id,document.getElementById(id).value.trim()])
   );
 
-  if(ids.some(id => !vals[id])){
-    throw new Error(
-      'Please complete all required contact and shipping fields.'
-    );
+  // Identify the exact missing field, especially helpful on mobile where
+  // browser autofill can leave individual fields blank.
+  document.querySelectorAll('.missing-field').forEach(el => el.classList.remove('missing-field'));
+  const missing = ids.find(id => !vals[id]);
+  if(missing){
+    const field = document.getElementById(missing);
+    const fieldName = document.querySelector(`label[for="${missing}"]`)?.textContent || missing;
+    field.classList.add('missing-field');
+    field.scrollIntoView({behavior:'smooth', block:'center'});
+    field.focus({preventScroll:true});
+    throw new Error(`Please enter your ${fieldName.toLowerCase()} before paying.`);
   }
 
   if(!/^[A-Za-z]{2}$/.test(vals.state)){
+    document.getElementById('state').classList.add('missing-field');
+    document.getElementById('state').focus();
     throw new Error('Please enter a two-letter state abbreviation.');
   }
 
   if(!/^\d{5}(?:-\d{4})?$/.test(vals.zip)){
+    document.getElementById('zip').classList.add('missing-field');
+    document.getElementById('zip').focus();
     throw new Error('Please enter a valid US ZIP code.');
   }
 
