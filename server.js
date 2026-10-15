@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs/promises');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,83 +35,285 @@ const PROMO_CODES = {
   }
 };
 
-// Prices are synchronized with the active builder in index.html.
-// Pair prices depend on speaker size. Keep these tables aligned when editing the builder.
+// PRICING
 const SPEAKER_PAIRS = {
-  '6.5"': {'Customer Supplied':0,Kenwood:40,Pyle:45,'Skar Audio':60,Pioneer:50,'Boss Audio':50,DS18:85,'Memphis Audio':105,Kicker:80,JBL:115,Infinity:115,'Rockford Fosgate':90,'Wet Sounds':150,'JL Audio':180,Scosche:50},
-  '6×9': {'Customer Supplied':0,Kenwood:60,Pyle:65,'Skar Audio':75,Pioneer:45,'Boss Audio':55,DS18:85,'Memphis Audio':110,Kicker:100,JBL:115,Infinity:130,'Rockford Fosgate':115,'Wet Sounds':650,'JL Audio':200,Scosche:60}
+  '6.5"': {
+    'Customer Supplied': 0,
+    Kenwood: 40,
+    Pyle: 45,
+    'Skar Audio': 60,
+    Pioneer: 50,
+    'Boss Audio': 50,
+    DS18: 85,
+    'Memphis Audio': 105,
+    Kicker: 80,
+    JBL: 115,
+    Infinity: 115,
+    'Rockford Fosgate': 90,
+    'Wet Sounds': 150,
+    'JL Audio': 180,
+    Scosche: 50
+  },
+  '6×9': {
+    'Customer Supplied': 0,
+    Kenwood: 60,
+    Pyle: 65,
+    'Skar Audio': 75,
+    Pioneer: 45,
+    'Boss Audio': 55,
+    DS18: 85,
+    'Memphis Audio': 110,
+    Kicker: 100,
+    JBL: 115,
+    Infinity: 130,
+    'Rockford Fosgate': 115,
+    'Wet Sounds': 650,
+    'JL Audio': 200,
+    Scosche: 60
+  }
 };
-const SUB_BRANDS = {'Customer Supplied':0,Generic:20,Pyle:40,'Boss Audio':50,'Skar Audio':90,DS18:100,Kenwood:100,Pioneer:100,JBL:110,Infinity:110,Kicker:100,'Rockford Fosgate':130,'Memphis Audio':130,'Wet Sounds':250,'JL Audio':250};
-const SUB_BY_SIZE = {
-  '4"':['Customer Supplied','Generic','Pyle'],
-  '5"':['Customer Supplied','Generic','Pyle'],
-  '6.5"':['Customer Supplied','Pyle','Skar Audio','DS18','Memphis Audio','JL Audio'],
-  '8"':['Customer Supplied','Pyle','Boss Audio','Skar Audio','DS18','Kenwood','Pioneer','JBL','Infinity','Kicker','Rockford Fosgate','Memphis Audio','Wet Sounds','JL Audio'],
-  '10"':['Customer Supplied','Pyle','Boss Audio','Skar Audio','DS18','Kenwood','Pioneer','JBL','Infinity','Kicker','Rockford Fosgate','Memphis Audio','Wet Sounds','JL Audio']
-};
-const POWER = {'Include Battery and Charger Bundle':60,DeWalt:15,'Milwaukee M18':15,Hart:15,Ryobi:15,Makita:15,Bauer:15,Hercules:15,Bosch:15,'Milwaukee M12':15,Other:15};
-const TWEETER_PRICES = {0:0,1:10,2:20,4:35,6:50,8:65};
-const ALLOWED_COUNTS = {'2800':[1],'3800':[1,2],'4800':[1,2],'5800':[1,2,3,4],'9800':[2,4,6,8]};
-const SUB_SIZES = {'2800':['4"','5"','6.5"'],'3800':['4"','5"','6.5"','8"'],'4800':['4"','5"','6.5"','8"'],'5800':['8"','10"'],'9800':['8"','10"']};
 
-// GET BUILD SELECTION
+const SUB_BRANDS = {
+  'Customer Supplied': 0,
+  Generic: 20,
+  Pyle: 40,
+  'Boss Audio': 50,
+  'Skar Audio': 90,
+  DS18: 100,
+  Kenwood: 100,
+  Pioneer: 100,
+  JBL: 110,
+  Infinity: 110,
+  Kicker: 100,
+  'Rockford Fosgate': 130,
+  'Memphis Audio': 130,
+  'Wet Sounds': 250,
+  'JL Audio': 250
+};
+
+const SUB_BY_SIZE = {
+  '4"': ['Customer Supplied', 'Generic', 'Pyle'],
+  '5"': ['Customer Supplied', 'Generic', 'Pyle'],
+  '6.5"': [
+    'Customer Supplied', 'Pyle', 'Skar Audio',
+    'DS18', 'Memphis Audio', 'JL Audio'
+  ],
+  '8"': [
+    'Customer Supplied', 'Pyle', 'Boss Audio',
+    'Skar Audio', 'DS18', 'Kenwood', 'Pioneer',
+    'JBL', 'Infinity', 'Kicker', 'Rockford Fosgate',
+    'Memphis Audio', 'Wet Sounds', 'JL Audio'
+  ],
+  '10"': [
+    'Customer Supplied', 'Pyle', 'Boss Audio',
+    'Skar Audio', 'DS18', 'Kenwood', 'Pioneer',
+    'JBL', 'Infinity', 'Kicker', 'Rockford Fosgate',
+    'Memphis Audio', 'Wet Sounds', 'JL Audio'
+  ]
+};
+
+const POWER = {
+  'Include Battery and Charger Bundle': 60,
+  DeWalt: 15,
+  'Milwaukee M18': 15,
+  Hart: 15,
+  Ryobi: 15,
+  Makita: 15,
+  Bauer: 15,
+  Hercules: 15,
+  Bosch: 15,
+  'Milwaukee M12': 15,
+  Other: 15
+};
+
+const TWEETER_PRICES = {
+  0: 0,
+  1: 10,
+  2: 20,
+  4: 35,
+  6: 50,
+  8: 65
+};
+
+const ALLOWED_COUNTS = {
+  '2800': [1],
+  '3800': [1, 2],
+  '4800': [1, 2],
+  '5800': [1, 2, 3, 4],
+  '9800': [2, 4, 6, 8]
+};
+
+const SUB_SIZES = {
+  '2800': ['4"', '5"', '6.5"'],
+  '3800': ['4"', '5"', '6.5"', '8"'],
+  '4800': ['4"', '5"', '6.5"', '8"'],
+  '5800': ['8"', '10"'],
+  '9800': ['8"', '10"']
+};
+
 function val(build, key) {
   return build?.selections?.[key]?.value ?? '';
 }
 
-// GET CASE CODE
 function caseCode(build) {
   return String(val(build, 'case'))
     .match(/1800|2800|3800|4800|5800|9800/)?.[0] || '';
 }
 
-// Recompute price from whitelisted selections, never client-provided price fields.
 function calculate(build) {
   const box = caseCode(build);
-  if (!Object.prototype.hasOwnProperty.call(ALLOWED_COUNTS,box)) throw new Error('Invalid box selection.');
-  const count = Number(String(val(build,'count')).match(/\d+/)?.[0] || 0);
-  const hasSub = val(build,'sub') === 'Yes';
-  if (!['Yes','No Subwoofer'].includes(val(build,'sub'))) throw new Error('Invalid subwoofer selection.');
-  const subCount = hasSub ? (val(build,'subCount')==='2 Subwoofers' ? 2 : 1) : 0;
-  const location = val(build,'subLocation');
-  let allowedCounts = ALLOWED_COUNTS[box];
-  if (hasSub && box==='5800') allowedCounts=allowedCounts.filter(n=>n<=2);
-  if (hasSub && ['3800','4800'].includes(box) && location==='Outside Box') allowedCounts=allowedCounts.filter(n=>n<=1);
-  if (hasSub && box==='9800' && subCount===2) allowedCounts=allowedCounts.filter(n=>n<=(location==='Outside Box'?4:6));
-  if (!allowedCounts.includes(count)) throw new Error('Invalid speaker count for this configuration.');
-  if (subCount===2 && box!=='9800') throw new Error('Two subwoofers require Big Daddy.');
-  const size=val(build,'size');
-  if (!Object.prototype.hasOwnProperty.call(SPEAKER_PAIRS,size)) throw new Error('Invalid speaker size.');
-  const brand=val(build,'brand');
-  if (!Object.prototype.hasOwnProperty.call(SPEAKER_PAIRS[size],brand)) throw new Error('Invalid speaker brand.');
-  const color=val(build,'color');
-  if (!color) throw new Error('Missing box color.');
-  const power=val(build,'power');
-  if (!Object.prototype.hasOwnProperty.call(POWER,power)) throw new Error('Invalid power selection.');
-  let total=BOX[box]+(color==='Custom'?25:0)+SPEAKER_PAIRS[size][brand]*count/2+POWER[power];
-  const tweeters=Number(String(val(build,'tweeters')).match(/\d+/)?.[0] || 0);
-  if (!Object.prototype.hasOwnProperty.call(TWEETER_PRICES,tweeters)) throw new Error('Invalid tweeter selection.');
-  if (['2800','3800','4800'].includes(box) && tweeters>4 || box==='5800' && tweeters>6 || box==='9800' && subCount===2 && tweeters>2) throw new Error('Too many tweeters for this build.');
-  total+=TWEETER_PRICES[tweeters];
-  if (hasSub) {
-    if (!['Inside Box','Outside Box'].includes(location)) throw new Error('Invalid subwoofer location.');
-    if (box==='2800' && location==='Outside Box') throw new Error('Subwoofer must be inside this box.');
-    const subSize=val(build,'subSize');
-    if (!SUB_SIZES[box].includes(subSize)) throw new Error('Invalid subwoofer size.');
-    const subBrand=val(build,'subBrand');
-    if (!SUB_BY_SIZE[subSize]?.includes(subBrand)) throw new Error('Invalid subwoofer brand for this size.');
-    total+=SUB_BRANDS[subBrand]*subCount;
+
+  if (!Object.prototype.hasOwnProperty.call(ALLOWED_COUNTS, box)) {
+    throw new Error('Invalid box selection.');
   }
-  const extra=val(build,'extra');
-  const extras=extra==='None' || !extra ? [] : String(extra).split(' + ').filter(Boolean);
-  if (new Set(extras).size!==extras.length || extras.some(x=>!['Battery Voltage and Charging Port','Custom Name / Logo'].includes(x))) throw new Error('Invalid extras selection.');
-  if (extras.includes('Battery Voltage and Charging Port')) total+=25;
-  if (extras.includes('Custom Name / Logo')) total+=20;
-  total+=Math.ceil(count/2)*25+subCount*25;
-  return Math.round(total*100)/100;
+
+  const count = Number(
+    String(val(build, 'count')).match(/\d+/)?.[0] || 0
+  );
+
+  const hasSub = val(build, 'sub') === 'Yes';
+
+  if (!['Yes', 'No Subwoofer'].includes(val(build, 'sub'))) {
+    throw new Error('Invalid subwoofer selection.');
+  }
+
+  const subCount = hasSub
+    ? (val(build, 'subCount') === '2 Subwoofers' ? 2 : 1)
+    : 0;
+
+  const location = val(build, 'subLocation');
+  let allowedCounts = ALLOWED_COUNTS[box];
+
+  if (hasSub && box === '5800') {
+    allowedCounts = allowedCounts.filter(n => n <= 2);
+  }
+
+  if (
+    hasSub &&
+    ['3800', '4800'].includes(box) &&
+    location === 'Outside Box'
+  ) {
+    allowedCounts = allowedCounts.filter(n => n <= 1);
+  }
+
+  if (hasSub && box === '9800' && subCount === 2) {
+    allowedCounts = allowedCounts.filter(
+      n => n <= (location === 'Outside Box' ? 4 : 6)
+    );
+  }
+
+  if (!allowedCounts.includes(count)) {
+    throw new Error('Invalid speaker count for this configuration.');
+  }
+
+  if (subCount === 2 && box !== '9800') {
+    throw new Error('Two subwoofers require Big Daddy.');
+  }
+
+  const size = val(build, 'size');
+
+  if (!Object.prototype.hasOwnProperty.call(SPEAKER_PAIRS, size)) {
+    throw new Error('Invalid speaker size.');
+  }
+
+  const brand = val(build, 'brand');
+
+  if (!Object.prototype.hasOwnProperty.call(SPEAKER_PAIRS[size], brand)) {
+    throw new Error('Invalid speaker brand.');
+  }
+
+  const color = val(build, 'color');
+
+  if (!color) {
+    throw new Error('Missing box color.');
+  }
+
+  const power = val(build, 'power');
+
+  if (!Object.prototype.hasOwnProperty.call(POWER, power)) {
+    throw new Error('Invalid power selection.');
+  }
+
+  let total =
+    BOX[box] +
+    (color === 'Custom' ? 25 : 0) +
+    SPEAKER_PAIRS[size][brand] * count / 2 +
+    POWER[power];
+
+  const tweeters = Number(
+    String(val(build, 'tweeters')).match(/\d+/)?.[0] || 0
+  );
+
+  if (!Object.prototype.hasOwnProperty.call(TWEETER_PRICES, tweeters)) {
+    throw new Error('Invalid tweeter selection.');
+  }
+
+  if (
+    (['2800', '3800', '4800'].includes(box) && tweeters > 4) ||
+    (box === '5800' && tweeters > 6) ||
+    (box === '9800' && subCount === 2 && tweeters > 2)
+  ) {
+    throw new Error('Too many tweeters for this build.');
+  }
+
+  total += TWEETER_PRICES[tweeters];
+
+  if (hasSub) {
+    if (!['Inside Box', 'Outside Box'].includes(location)) {
+      throw new Error('Invalid subwoofer location.');
+    }
+
+    if (box === '2800' && location === 'Outside Box') {
+      throw new Error('Subwoofer must be inside this box.');
+    }
+
+    const subSize = val(build, 'subSize');
+
+    if (!SUB_SIZES[box].includes(subSize)) {
+      throw new Error('Invalid subwoofer size.');
+    }
+
+    const subBrand = val(build, 'subBrand');
+
+    if (!SUB_BY_SIZE[subSize]?.includes(subBrand)) {
+      throw new Error('Invalid subwoofer brand for this size.');
+    }
+
+    total += SUB_BRANDS[subBrand] * subCount;
+  }
+
+  const extra = val(build, 'extra');
+
+  const extras = extra === 'None' || !extra
+    ? []
+    : String(extra).split(' + ').filter(Boolean);
+
+  if (
+    new Set(extras).size !== extras.length ||
+    extras.some(
+      x => ![
+        'Battery Voltage and Charging Port',
+        'Custom Name / Logo'
+      ].includes(x)
+    )
+  ) {
+    throw new Error('Invalid extras selection.');
+  }
+
+  if (extras.includes('Battery Voltage and Charging Port')) {
+    total += 25;
+  }
+
+  if (extras.includes('Custom Name / Logo')) {
+    total += 20;
+  }
+
+  total += Math.ceil(count / 2) * 25 + subCount * 25;
+
+  return Math.round(total * 100) / 100;
 }
 
-// CALCULATE NORMAL SHIPPING
+// SHIPPING
 function shipping(build) {
   const box = caseCode(build);
 
@@ -121,12 +324,9 @@ function shipping(build) {
   return SHIPPING[box];
 }
 
-// APPLY PROMO CODE
+// PROMO CODES
 function applyPromo(build, promoCode) {
-  const code = String(promoCode || '')
-    .trim()
-    .toUpperCase();
-
+  const code = String(promoCode || '').trim().toUpperCase();
   const normalShipping = shipping(build);
 
   if (!code) {
@@ -166,9 +366,7 @@ async function accessToken() {
   const secret = process.env.PAYPAL_CLIENT_SECRET;
 
   if (!id || !secret) {
-    throw new Error(
-      'PayPal is not connected yet. Add PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET to the server environment.'
-    );
+    throw new Error('PayPal is not connected yet.');
   }
 
   const base = process.env.PAYPAL_ENV === 'live'
@@ -199,6 +397,115 @@ async function accessToken() {
   };
 }
 
+// PRIVATE ORDER STORAGE
+const ORDER_DIR = process.env.ORDER_DATA_DIR ||
+  path.resolve(__dirname, '..', 'b2b_private_orders');
+
+function orderFile(orderID) {
+  if (!/^[A-Za-z0-9_-]{8,100}$/.test(String(orderID))) {
+    throw new Error('Invalid PayPal order ID.');
+  }
+
+  return path.join(ORDER_DIR, `${orderID}.json`);
+}
+
+async function saveOrder(order) {
+  await fs.mkdir(ORDER_DIR, {
+    recursive: true,
+    mode: 0o700
+  });
+
+  await fs.writeFile(
+    orderFile(order.orderId),
+    JSON.stringify(order, null, 2),
+    { mode: 0o600 }
+  );
+}
+
+async function readOrder(orderID) {
+  try {
+    return JSON.parse(
+      await fs.readFile(orderFile(orderID), 'utf8')
+    );
+  } catch (err) {
+    if (err.code === 'ENOENT') return null;
+    throw err;
+  }
+}
+
+// FORMAT ORDER EMAIL
+function orderEmailText(order) {
+  const { customer, build } = order;
+
+  const selections = Object.entries(build.selections || {})
+    .filter(([, item]) =>
+      item && item.value !== undefined && item.value !== ''
+    )
+    .map(([key, item]) => `${key}: ${String(item.value)}`)
+    .join('\n');
+
+  return [
+    'NEW PAID BUILT2BOOMCUSTOMS ORDER',
+    `PayPal order ID: ${order.orderId}`,
+    `PayPal capture ID: ${order.captureId || 'Not supplied'}`,
+    `Customer: ${customer.name}`,
+    `Email: ${customer.email}`,
+    `Phone: ${customer.phone}`,
+    `Ship to: ${customer.address1}${customer.address2 ? ', ' + customer.address2 : ''}, ${customer.city}, ${customer.state} ${customer.zip}, US`,
+    '',
+    'BUILD SELECTIONS',
+    selections,
+    '',
+    `Build subtotal: $${order.subtotal.toFixed(2)}`,
+    `Shipping: $${order.shipping.toFixed(2)}`,
+    `Total paid: $${order.total.toFixed(2)}`,
+    `Promo code: ${order.promoCode || 'None'}`
+  ].join('\n');
+}
+
+// SEND EMAIL THROUGH RESEND
+async function sendOrderEmail(order) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.ORDER_EMAIL_FROM;
+
+  if (!apiKey || !from) {
+    throw new Error(
+      'Order emails are not configured: RESEND_API_KEY and ORDER_EMAIL_FROM are required.'
+    );
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(
+    () => controller.abort(),
+    12000
+  );
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from,
+        to: ['built2boomcustoms@gmail.com'],
+        subject: `PAID ORDER - ${order.customer.name} - $${order.total.toFixed(2)}`,
+        text: orderEmailText(order)
+      }),
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Email provider rejected notification (HTTP ${response.status})`
+      );
+    }
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 // CREATE PAYPAL ORDER
 app.post('/api/paypal/orders', async (req, res) => {
   try {
@@ -219,17 +526,14 @@ app.post('/api/paypal/orders', async (req, res) => {
       );
     }
 
-    // CALCULATE PRICES ON SERVER
     const subtotal = calculate(build);
-
-    // APPLY PROMO CODE
     const promo = applyPromo(build, promoCode);
 
     const ship = promo.shipping;
     const grand = subtotal + ship;
 
-    // Require the amount shown at checkout to match the server price.
     const displayedSubtotal = Number(build.total);
+
     if (
       !Number.isFinite(displayedSubtotal) ||
       Math.abs(displayedSubtotal - subtotal) > 0.01
@@ -249,16 +553,13 @@ app.post('/api/paypal/orders', async (req, res) => {
 
     const paypalBody = {
       intent: 'CAPTURE',
-
       purchase_units: [
         {
           description: 'Built2BoomCustoms Custom Speaker Build',
           custom_id: compact,
-
           amount: {
             currency_code: 'USD',
             value: grand.toFixed(2),
-
             breakdown: {
               item_total: {
                 currency_code: 'USD',
@@ -270,7 +571,6 @@ app.post('/api/paypal/orders', async (req, res) => {
               }
             }
           },
-
           items: [
             {
               name: 'Custom Speaker Build',
@@ -281,12 +581,10 @@ app.post('/api/paypal/orders', async (req, res) => {
               }
             }
           ],
-
           shipping: {
             name: {
               full_name: customer.name
             },
-
             address: {
               address_line_1: customer.address1,
               address_line_2: customer.address2 || undefined,
@@ -321,6 +619,19 @@ app.post('/api/paypal/orders', async (req, res) => {
       );
     }
 
+    await saveOrder({
+      orderId: result.id,
+      customer,
+      build,
+      subtotal,
+      shipping: ship,
+      total: grand,
+      promoCode: promo.appliedCode,
+      paymentStatus: 'PENDING',
+      notificationStatus: 'NOT_SENT',
+      createdAt: new Date().toISOString()
+    });
+
     res.json({
       orderId: result.id,
       subtotal,
@@ -337,7 +648,7 @@ app.post('/api/paypal/orders', async (req, res) => {
   }
 });
 
-// PUBLIC PAYPAL CLIENT CONFIG FOR JS SDK
+// PAYPAL CLIENT CONFIG
 app.get('/api/paypal/config', (req, res) => {
   const clientId = process.env.PAYPAL_CLIENT_ID;
 
@@ -353,7 +664,7 @@ app.get('/api/paypal/config', (req, res) => {
   });
 });
 
-// CAPTURE PAYPAL PAYMENT FROM JS SDK
+// CAPTURE PAYMENT
 app.post('/api/paypal/capture', async (req, res) => {
   try {
     const orderID = req.body?.orderID;
@@ -383,11 +694,54 @@ app.post('/api/paypal/capture', async (req, res) => {
       );
     }
 
+    // Send notification only after successful payment.
+    try {
+      const saved = await readOrder(orderID);
+
+      if (saved) {
+        saved.paymentStatus = 'COMPLETED';
+        saved.captureId =
+          result.purchase_units?.[0]?.payments?.captures?.[0]?.id || '';
+        saved.paidAt = new Date().toISOString();
+
+        await saveOrder(saved);
+
+        if (saved.notificationStatus !== 'SENT') {
+          try {
+            await sendOrderEmail(saved);
+
+            saved.notificationStatus = 'SENT';
+            saved.notifiedAt = new Date().toISOString();
+
+            await saveOrder(saved);
+          } catch (emailError) {
+            console.error(
+              'Paid order email failed for',
+              orderID,
+              emailError.message
+            );
+          }
+        }
+      } else {
+        console.error(
+          'Paid order has no local build record:',
+          orderID
+        );
+      }
+    } catch (recordError) {
+      console.error(
+        'Could not record completed order:',
+        orderID,
+        recordError.message
+      );
+    }
+
     res.json({
       success: true,
       orderId: orderID,
       status: result.status,
-      redirectUrl: '/success.html?order_id=' + encodeURIComponent(orderID)
+      redirectUrl:
+        '/success.html?order_id=' + encodeURIComponent(orderID)
     });
 
   } catch (error) {
