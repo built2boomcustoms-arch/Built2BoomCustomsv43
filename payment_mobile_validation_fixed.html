@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checkout | Built2BoomCustoms</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b0d10;color:#f4f4f4;font-family:Arial,Helvetica,sans-serif}
+.wrap{max-width:1100px;margin:auto;padding:35px 20px 70px}
+a{color:#fff}
+.logo{font-weight:900;letter-spacing:1px;margin-bottom:35px}
+.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:22px}
+.card{background:#14171b;border:1px solid #292d32;border-radius:16px;padding:24px}
+h1{font-size:42px;margin:0 0 8px}
+h2{margin-top:0}
+.muted,.note{color:#9da3aa;line-height:1.55}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.field{margin:10px 0}
+.field.full{grid-column:1/-1}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+.field input,.field select{width:100%;padding:14px;border-radius:10px;border:1px solid #30343a;background:#0d1013;color:#eee;font-size:16px}
+.line{display:flex;justify-content:space-between;gap:15px;padding:9px 0;border-bottom:1px solid #292d32;color:#c8ccd1}
+.totals{margin-top:12px}
+.total{display:flex;justify-content:space-between;font-size:27px;font-weight:900;padding-top:14px}
+.back{display:inline-block;margin-bottom:22px;text-decoration:none;color:#c8ccd1}
+.field input.missing-field{border-color:#ff8888;box-shadow:0 0 0 2px rgba(255,136,136,.18)}
+.error{display:none;background:#3a1616;border:1px solid #743333;color:#ffbcbc;padding:12px;border-radius:10px;margin-top:14px}
+.paybox{margin-top:18px;padding:16px;border:1px solid #30343a;border-radius:12px;background:#0d1013}
+.paybox strong{display:block;margin-bottom:6px}
+.methods{font-size:14px;color:#c8ccd1;line-height:1.6}
+.secure{font-size:12px;color:#888;margin-top:12px}
+.promo-row{display:flex;gap:8px}
+.promo-row input{flex:1;min-width:0;padding:13px;border-radius:9px;border:1px solid #30343a;background:#0d1013;color:#eee;font-size:16px;text-transform:uppercase}
+.promo-row button{padding:0 18px;border:0;border-radius:9px;background:#fff;color:#08090a;font-weight:800;cursor:pointer}
+.promo-message{font-size:13px;margin:9px 0 0;min-height:18px}
+.promo-success{color:#76e0a3}
+.promo-error{color:#ffbcbc}
+#paymentButtons>div{margin:0 0 12px;min-height:0}
+
+@media(max-width:800px){
+  .grid{grid-template-columns:1fr}
+  .fields{grid-template-columns:1fr}
+  .field.full{grid-column:auto}
+  h1{font-size:34px}
+}
+</style>
+</head>
+
+<body>
+<main class="wrap">
+
+<div class="logo">BUILT2BOOMCUSTOMS</div>
+<a class="back" href="index.html#builder">← Back to Builder</a>
+
+<h1>Checkout</h1>
+<p class="muted">
+Enter your shipping information, review the final total,
+then continue to secure payment.
+</p>
+
+<div class="grid">
+
+<section class="card">
+<h2>Shipping Information</h2>
+
+<div class="fields">
+
+<div class="field full">
+<label for="name">Full Name</label>
+<input id="name" autocomplete="name">
+</div>
+
+<div class="field">
+<label for="email">Email</label>
+<input id="email" type="email" autocomplete="email">
+</div>
+
+<div class="field">
+<label for="phone">Phone Number</label>
+<input id="phone" type="tel" autocomplete="tel">
+</div>
+
+<div class="field full">
+<label for="address1">Street Address</label>
+<input id="address1" autocomplete="shipping address-line1">
+</div>
+
+<div class="field full">
+<label for="address2">Apartment, Suite, etc. (optional)</label>
+<input id="address2" autocomplete="shipping address-line2">
+</div>
+
+<div class="field">
+<label for="city">City</label>
+<input id="city" autocomplete="shipping address-level2">
+</div>
+
+<div class="field">
+<label for="state">State</label>
+<input id="state" maxlength="2" placeholder="KS" autocomplete="shipping address-level1">
+</div>
+
+<div class="field">
+<label for="zip">ZIP Code</label>
+<input id="zip" inputmode="numeric" autocomplete="shipping postal-code">
+</div>
+
+<div class="field">
+<label for="country">Country</label>
+<select id="country">
+<option value="US">United States</option>
+</select>
+</div>
+
+</div>
+
+<div class="paybox">
+<strong>Secure Payment Methods</strong>
+<div class="methods">
+PayPal • PayPal Pay Later • Debit / Credit Card
+</div>
+<div class="secure">
+Payment methods are provided by PayPal and may vary based on
+customer eligibility and account settings.
+</div>
+<div class="secure">
+Payment information is securely handled by PayPal.
+Built2BoomCustoms does not store card numbers.
+</div>
+</div>
+
+<h2 style="margin:25px 0 14px">Choose how you want to pay</h2>
+
+<div id="paymentButtons" aria-label="Available PayPal payment methods">
+  <div id="paypal-button"></div>
+  <div id="paylater-button"></div>
+  <div id="card-button"></div>
+</div>
+
+<p class="secure" style="text-align:center">
+Powered by PayPal. Only eligible payment methods will appear.
+</p>
+
+<div class="error" id="error"></div>
+</section>
+
+<section class="card">
+<h2>Your Build</h2>
+<div id="build"></div>
+
+<div class="paybox">
+<strong>Have a promo code?</strong>
+<div class="promo-row">
+<input id="promoCode" placeholder="Enter promo code" maxlength="40" autocomplete="off" aria-label="Promo code">
+<button id="applyPromo" type="button">Apply</button>
+</div>
+<p class="promo-message" id="promoMessage" role="status" aria-live="polite"></p>
+</div>
+
+<div class="totals">
+<div class="line">
+<span>Build Subtotal</span>
+<span id="subtotal">$0.00</span>
+</div>
+<div class="line">
+<span>Shipping</span>
+<span id="shipping">$0.00</span>
+</div>
+<div class="total">
+<span>Total</span>
+<span id="total">$0.00</span>
+</div>
+</div>
+
+<p class="note">
+Shipping is currently estimated by case size for U.S. orders.
+Carrier-calculated rates can be connected later.
+</p>
+
+</section>
+</div>
+</main>
+
+<script>
+const data = JSON.parse(sessionStorage.getItem('b2b_build') || 'null');
+
+const SHIPPING = {
+  1800:15,
+  2800:20,
+  3800:25,
+  4800:35,
+  5800:50,
+  9800:95
+};
+
+const buildEl = document.getElementById('build');
+const promoInput = document.getElementById('promoCode');
+const promoMessage = document.getElementById('promoMessage');
+
+let appliedPromoCode = '';
+
+function caseCode(){
+  return String(data?.selections?.case?.value || '')
+    .match(/1800|2800|3800|4800|5800|9800/)?.[0] || '';
+}
+
+function shipCost(){
+  return SHIPPING[caseCode()] || 0;
+}
+
+function money(n){
+  return '$' + Number(n || 0).toFixed(2);
+}
+
+function updateTotals(){
+  const sub = Number(data?.total || 0);
+  const ship = appliedPromoCode === 'KALVEN' ? 0 : shipCost();
+
+  document.getElementById('subtotal').textContent = money(sub);
+  document.getElementById('shipping').textContent =
+    appliedPromoCode === 'KALVEN' ? 'FREE' : money(ship);
+  document.getElementById('total').textContent = money(sub + ship);
+}
+
+function applyPromo(){
+  const code = promoInput.value.trim().toUpperCase();
+
+  if(code === 'KALVEN'){
+    appliedPromoCode = code;
+    promoMessage.textContent = '✓ KALVEN applied — free shipping!';
+    promoMessage.className = 'promo-message promo-success';
+  } else {
+    appliedPromoCode = '';
+    promoMessage.textContent = code
+      ? 'Invalid promo code. Please try again.'
+      : 'Enter a promo code first.';
+    promoMessage.className = 'promo-message promo-error';
+  }
+
+  updateTotals();
+}
+
+document.getElementById('applyPromo').addEventListener('click', applyPromo);
+
+promoInput.addEventListener('keydown', e => {
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    applyPromo();
+  }
+});
+
+promoInput.addEventListener('input', () => {
+  if(appliedPromoCode){
+    appliedPromoCode = '';
+    promoMessage.textContent = 'Click Apply to use your code.';
+    promoMessage.className = 'promo-message';
+    updateTotals();
+  }
+});
+
+if(!data){
+  buildEl.innerHTML =
+    '<p class="muted">No build was found. Go back to the builder and create one.</p>';
+  document.getElementById('paymentButtons').textContent =
+    'Create a build before paying.';
+} else {
+
+  const labels = {
+    case:'Box Size',
+    color:'Color',
+    customColor:'Custom Color',
+    sub:'Subwoofer',
+    subCount:'Subwoofers',
+    subBrand:'Subwoofer Brand',
+    subLocation:'Subwoofer Location',
+    subSize:'Subwoofer Size',
+    count:'Speakers',
+    tweeters:'Extra Tweeters',
+    power:'Power System',
+    otherPower:'Custom Power Brand',
+    brand:'Speaker Brand',
+    size:'Speaker Size',
+    extra:'Extras',
+    customLogoText:'Logo Text',
+    customLogoFont:'Logo Font',
+    customLogoLocation:'Logo Location'
+  };
+
+  const order = [
+    'case','color','customColor','sub','subCount',
+    'subBrand','subLocation','subSize','count',
+    'tweeters','power','otherPower','brand','size',
+    'extra','customLogoText','customLogoFont',
+    'customLogoLocation'
+  ];
+
+  for(const k of order){
+    const value = data.selections?.[k]?.value;
+    if(value == null || value === '') continue;
+
+    const line = document.createElement('div');
+    line.className = 'line';
+
+    const label = document.createElement('span');
+    const detail = document.createElement('span');
+
+    label.textContent = labels[k] || k;
+    detail.textContent = String(value);
+
+    line.append(label, detail);
+    buildEl.append(line);
+  }
+
+  updateTotals();
+}
+
+// Remove the field warning once the customer starts correcting it.
+document.querySelectorAll('.fields input').forEach(input => {
+  input.addEventListener('input', () => input.classList.remove('missing-field'));
+});
+
+// Validate customer shipping information
+function customerDetails(){
+  const ids = ['name','email','phone','address1','city','state','zip'];
+
+  const vals = Object.fromEntries(
+    ids.map(id => [id,document.getElementById(id).value.trim()])
+  );
+
+  // Identify the exact missing field, especially helpful on mobile where
+  // browser autofill can leave individual fields blank.
+  document.querySelectorAll('.missing-field').forEach(el => el.classList.remove('missing-field'));
+  const missing = ids.find(id => !vals[id]);
+  if(missing){
+    const field = document.getElementById(missing);
+    const fieldName = document.querySelector(`label[for="${missing}"]`)?.textContent || missing;
+    field.classList.add('missing-field');
+    field.scrollIntoView({behavior:'smooth', block:'center'});
+    field.focus({preventScroll:true});
+    throw new Error(`Please enter your ${fieldName.toLowerCase()} before paying.`);
+  }
+
+  if(!/^[A-Za-z]{2}$/.test(vals.state)){
+    document.getElementById('state').classList.add('missing-field');
+    document.getElementById('state').focus();
+    throw new Error('Please enter a two-letter state abbreviation.');
+  }
+
+  if(!/^\d{5}(?:-\d{4})?$/.test(vals.zip)){
+    document.getElementById('zip').classList.add('missing-field');
+    document.getElementById('zip').focus();
+    throw new Error('Please enter a valid US ZIP code.');
+  }
+
+  if(!data){
+    throw new Error('Please create your build first.');
+  }
+
+  return {
+    ...vals,
+    address2:document.getElementById('address2').value.trim(),
+    country:'US'
+  };
+}
+
+function showError(message){
+  const err = document.getElementById('error');
+  err.textContent = message;
+  err.style.display = 'block';
+}
+
+// Create a real PayPal order using the server
+async function createOrder(){
+  document.getElementById('error').style.display = 'none';
+
+  const customer = customerDetails();
+
+  const response = await fetch('/api/paypal/orders',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      customer,
+      build:data,
+      promoCode:appliedPromoCode
+    })
+  });
+
+  const out = await response.json();
+
+  if(!response.ok){
+    throw new Error(out.error || 'Unable to create payment.');
+  }
+
+  const displayed = Number(data.total || 0) +
+    (appliedPromoCode === 'KALVEN' ? 0 : shipCost());
+
+  if(Math.abs(Number(out.total) - displayed) > 0.01){
+    throw new Error(
+      'Build price does not match the payment total. Please contact support before paying.'
+    );
+  }
+
+  return out.orderId;
+}
+
+// Capture payment after customer approves it
+async function captureOrder(orderID){
+  const response = await fetch('/api/paypal/capture',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({orderID})
+  });
+
+  const out = await response.json();
+
+  if(!response.ok || out.status !== 'COMPLETED'){
+    throw new Error(out.error || 'Payment could not be completed.');
+  }
+
+  window.location.href =
+    '/success.html?order_id=' + encodeURIComponent(orderID);
+}
+
+// Load PayPal's actual payment buttons
+async function loadPaymentButtons(){
+  if(!data) return;
+
+  try {
+    const response = await fetch('/api/paypal/config');
+    const config = await response.json();
+
+    if(!response.ok || !config.clientId){
+      throw new Error(
+        config.error || 'PayPal configuration unavailable.'
+      );
+    }
+
+    const sdk = document.createElement('script');
+
+    const params = new URLSearchParams({
+      'client-id': config.clientId,
+      currency: 'USD',
+      intent: 'capture',
+      components: 'buttons'
+    });
+
+    sdk.src =
+      'https://www.paypal.com/sdk/js?' + params.toString();
+
+    sdk.onload = async () => {
+      try {
+        if(!window.paypal || !window.paypal.Buttons){
+          throw new Error('PayPal payment buttons are unavailable.');
+        }
+
+        const options = [
+          {funding:paypal.FUNDING.PAYPAL,id:'paypal-button'},
+          {funding:paypal.FUNDING.PAYLATER,id:'paylater-button'},
+          {funding:paypal.FUNDING.CARD,id:'card-button'}
+        ];
+
+        let shown = 0;
+
+        for(const option of options){
+          if(!option.funding) continue;
+
+          const button = paypal.Buttons({
+            fundingSource:option.funding,
+
+            style:{
+              layout:'vertical',
+              shape:'rect',
+              height:48
+            },
+
+            createOrder:async()=>{
+              try {
+                return await createOrder();
+              } catch(error){
+                showError(error.message);
+                throw error;
+              }
+            },
+
+            onApprove:async details=>{
+              try {
+                await captureOrder(details.orderID);
+              } catch(error){
+                showError(error.message);
+              }
+            },
+
+            onError:error=>{
+              showError(
+                error?.message || 'Unable to process payment.'
+              );
+            }
+          });
+
+          if(button.isEligible()){
+            await button.render('#' + option.id);
+            shown++;
+          }
+        }
+
+        if(!shown){
+          showError(
+            'No payment methods are currently available for this device or account.'
+          );
+        }
+
+      } catch(error){
+        showError(error.message);
+      }
+    };
+
+    sdk.onerror = () => {
+      showError(
+        'Could not load PayPal payment buttons. Please check your PayPal configuration.'
+      );
+    };
+
+    document.head.appendChild(sdk);
+
+  } catch(error){
+    showError(error.message);
+  }
+}
+
+loadPaymentButtons();
+</script>
+
+<footer style="border-top:1px solid #222;padding:28px 6%;color:#888;font-size:13px;margin-top:40px">
+<a href="index.html" style="color:#bbb;text-decoration:none;margin-right:18px">Build Your Box</a>
+<a href="support.html" style="color:#bbb;text-decoration:none;margin-right:18px">Customer Support</a>
+<a href="return-policy.html" style="color:#bbb;text-decoration:none;margin-right:18px">Return Policy</a>
+<span>© Built2BoomCustoms</span>
+</footer>
+
+</body>
+</html>
