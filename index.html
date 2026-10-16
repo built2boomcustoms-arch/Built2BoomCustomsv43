@@ -7,7 +7,7 @@
 <style>
 *{box-sizing:border-box}body{margin:0;background:#0b0d10;color:#f4f4f4;font-family:Arial,Helvetica,sans-serif}
 header{padding:20px 7%;border-bottom:1px solid #282c31;display:flex;justify-content:space-between;position:sticky;top:0;background:#0b0d10;z-index:10}
-.logo{font-weight:900;letter-spacing:1px}nav a{color:#ddd;text-decoration:none;margin-left:20px;font-size:14px}
+.logo{font-weight:900;letter-spacing:1px}nav{display:flex;align-items:center;flex-wrap:wrap;gap:12px}nav a{color:#ddd;text-decoration:none;margin-left:0;font-size:14px}
 .hero,.section{max-width:1200px;margin:auto;padding:65px 7%}.hero{display:grid;grid-template-columns:1fr 1fr;gap:45px;align-items:center}
 h1{font-size:clamp(42px,6vw,72px);line-height:.95;text-transform:uppercase;margin:0 0 20px;letter-spacing:-3px}
 h2{font-size:38px;margin:0 0 8px}.muted{color:#9da3aa;line-height:1.6}
@@ -37,19 +37,62 @@ h2{font-size:38px;margin:0 0 8px}.muted{color:#9da3aa;line-height:1.6}
 .q9-choice:hover,.q9-choice.active{border-color:#fff;background:#1d2025}
 .subbrand-choice{background:#0d1013;color:#eee;border:1px solid #30343a;border-radius:10px;padding:14px;text-align:left;cursor:pointer;font:inherit}.subbrand-choice:hover,.subbrand-choice.active{border-color:#fff;background:#1d2025}
 @media(max-width:850px){.q9-grid{grid-template-columns:1fr}}
+
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:20px}.btn-outline{display:inline-block;border:1px solid #888;border-radius:9px;padding:14px 20px;color:#fff;text-decoration:none;font-weight:800;font-size:13px}.water-note{margin-top:18px;font-size:14px;line-height:1.65;color:#b9c0c8;max-width:600px}.nav-safety{border:1px solid #767d86;border-radius:7px;padding:8px 10px}
+/* Completed builds gallery and USA assembly section */
+.usa-strip{max-width:1200px;margin:0 auto;padding:0 7% 18px;display:flex;align-items:center;gap:14px}
+.usa-mark{font-size:27px;line-height:1}
+.usa-strip strong{display:block;font-size:16px;letter-spacing:1.2px}
+.usa-strip span{display:block;color:#9da3aa;font-size:13px;margin-top:4px}
+.build-gallery{padding-top:36px}
+.gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:24px}
+.gallery-photo{margin:0;border:1px solid #30343a;border-radius:15px;overflow:hidden;background:#14171b}
+.gallery-photo img{width:100%;height:240px;object-fit:cover;display:block}
+.gallery-photo figcaption{padding:13px 15px;color:#c8ccd1;font-size:13px}
+@media(max-width:700px){.gallery-grid{grid-template-columns:1fr}.gallery-photo img{height:270px}.usa-strip{padding-top:10px}}
 </style>
 </head>
 <body>
-<header><div class="logo">BUILT2BOOMCUSTOMS</div><nav><a href="#builder">Build Yours</a><a href="#how">How It Works</a><a href="return-policy.html">Return Policy</a><a href="support.html">Customer Support</a><a href="mailto:built2boomcustoms@gmail.com">built2boomcustoms@gmail.com</a></nav></header>
+<header><div class="logo">BUILT2BOOMCUSTOMS</div><nav><a href="#builder">Build Yours</a><a href="#how">How It Works</a><a href="safety-liability.html" class="nav-safety">Safety &amp; Liability</a><a href="return-policy.html">Return Policy</a><a href="support.html">Customer Support</a><a href="mailto:built2boomcustoms@gmail.com">built2boomcustoms@gmail.com</a></nav></header>
 
 <section class="hero">
 <div>
 <p style="letter-spacing:2px;font-weight:800">BUILT TO YOUR SPECS</p>
 <h1>Build Your Own Portable Sound System.</h1>
 <p class="muted">Choose your case dimensions, speakers, subwoofer, tweeters and power system. We build the finished box to your configuration.</p>
-<a class="btn" href="#builder">START BUILDING →</a>
+<div class="hero-actions"><a class="btn" href="#builder">START BUILDING →</a><a class="btn-outline" href="safety-liability.html">SAFETY &amp; LIABILITY →</a></div>
+<p class="water-note">Our custom portable speakers are designed for durability and everyday use. While our current models are water-resistant, they are not fully waterproof and should not be submerged or exposed to excessive moisture. We are actively developing a fully waterproof, floatable speaker system for future release.</p>
 </div>
 <div class="hero-box"><img src="IMG_6264.JPG" alt="Built2BoomCustoms custom speaker box build"></div>
+</section>
+
+
+<section class="usa-strip" aria-label="Assembled in the USA">
+  <div class="usa-mark" aria-hidden="true">🇺🇸</div>
+  <div><strong>ASSEMBLED IN THE USA</strong><span>Custom-built portable sound systems, assembled in the United States.</span></div>
+</section>
+
+<section class="section build-gallery" id="completed-builds">
+  <h2>Our Completed Builds</h2>
+  <p class="muted">Take a look at speaker boxes we've already built. Each setup is customized to the customer's specifications.</p>
+  <div class="gallery-grid" id="completedBuildGallery">
+    <figure class="gallery-photo">
+      <img src="IMG_6264.JPG" alt="Completed Built2BoomCustoms speaker box" loading="lazy">
+      <figcaption>Custom speaker box build</figcaption>
+    </figure>
+    <figure class="gallery-photo">
+      <img src="IMG_6291.jpg" alt="Tan portable speaker box with white Pyle speakers" loading="lazy">
+      <figcaption>Tan custom build with Pyle speakers</figcaption>
+    </figure>
+    <figure class="gallery-photo">
+      <img src="IMG_6310.jpg" alt="Black portable speaker box with dual Kicker speakers" loading="lazy">
+      <figcaption>Black custom build with Kicker speakers</figcaption>
+    </figure>
+    <figure class="gallery-photo">
+      <img src="IMG_6340.jpg" alt="Black portable speaker box with Boss speakers and cordless battery charger" loading="lazy">
+      <figcaption>Black custom build with Boss speakers</figcaption>
+    </figure>
+  </div>
 </section>
 
 <section class="section" id="builder">
@@ -709,5 +752,5 @@ document.getElementById('logoLocation').addEventListener('change',e=>{state.cust
 render();
 
 </script>
-<footer style="border-top:1px solid #222;padding:28px 6%;color:#888;font-size:13px;margin-top:40px"><a href="index.html" style="color:#bbb;text-decoration:none;margin-right:18px">Build Your Box</a><a href="support.html" style="color:#bbb;text-decoration:none;margin-right:18px">Customer Support</a><a href="return-policy.html" style="color:#bbb;text-decoration:none;margin-right:18px">Return Policy</a><span>© Built2BoomCustoms</span></footer></body>
+<footer style="border-top:1px solid #222;padding:28px 6%;color:#888;font-size:13px;margin-top:40px"><a href="index.html" style="color:#bbb;text-decoration:none;margin-right:18px">Build Your Box</a><a href="support.html" style="color:#bbb;text-decoration:none;margin-right:18px">Customer Support</a><a href="return-policy.html" style="color:#bbb;text-decoration:none;margin-right:18px">Return Policy</a><a href="safety-liability.html" style="color:#bbb;text-decoration:none;margin-right:18px">Safety &amp; Liability</a><span>© Built2BoomCustoms</span></footer></body>
 </html>
