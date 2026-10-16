@@ -77,14 +77,16 @@ h2{font-size:38px;margin:0 0 8px}.muted{color:#9da3aa;line-height:1.6}
 <button class="option active" data-group="subLocation" data-value="Inside Box" data-price="0">Inside Box — $0<small>Subwoofer mounted into the enclosure</small></button>
 <button class="option" data-group="subLocation" data-value="Outside Box" data-price="0">Outside Box — $0<small>Subwoofer mounted externally</small></button>
 </div></div>
-<div class="inline-sub" id="subSizeStep" style="display:none"><h4>Subwoofer Size</h4><p class="note">Only available brands for the selected subwoofer size are shown. 4-inch and 5-inch options are unavailable until a suitable subwoofer is verified. Prices are per subwoofer; fit and amplifier compatibility are confirmed before building.</p><div id="q9SubSizeChoices" class="q9-grid" aria-label="Subwoofer Size choices"></div></div>
+<div class="inline-sub" id="subSizeStep" style="display:none"><h4>Subwoofer Size</h4><p class="note">Only available brands for the selected subwoofer size are shown. Prices are per subwoofer; fit and amplifier compatibility are confirmed before building.</p><div id="q9SubSizeChoices" class="q9-grid" aria-label="Subwoofer Size choices"></div></div>
 <div class="inline-sub" id="subBrandInline" style="display:none"><h4>Subwoofer Brand</h4><div class="options" id="subBrandOptions"></div></div>
 
 <div class="step"><h3>4. Number of Speakers</h3><div class="options" id="speakerCountOptions"></div></div>
 
 <div class="step"><h3>5. Add Extra Tweeters?</h3><div class="options" id="tweeterOptions"></div></div>
 
-<div class="step"><h3>6. Power System</h3><div class="options">
+<div class="step"><h3>6. Power System</h3>
+<p class="muted" style="margin:0 0 14px">What brand of cordless drill battery do you use? Select your battery brand below so we can build your speaker to work with it. Don't have a drill battery? Choose <strong>Include Battery and Charger Bundle</strong> and we'll supply both.</p>
+<div class="options">
 <button class="option active" data-group="power" data-value="Include Battery and Charger Bundle" data-price="70">Include Battery and Charger Bundle — $70</button>
 <button class="option" data-group="power" data-value="DeWalt 20V" data-price="25">DeWalt 20V — $25</button>
 <button class="option" data-group="power" data-value="Milwaukee M18" data-price="25">Milwaukee M18 — $25</button>
@@ -94,6 +96,19 @@ h2{font-size:38px;margin:0 0 8px}.muted{color:#9da3aa;line-height:1.6}
 <button class="option" data-group="power" data-value="Other" data-price="25">Other — $25</button>
 </div>
 <div id="otherPowerWrap" style="display:none;margin-top:12px"><input id="otherPower" type="text" placeholder="Enter battery/power brand" style="width:100%;padding:14px;border-radius:10px;border:1px solid #30343a;background:#0d1013;color:#eee"></div>
+<div id="batteryVoltageWrap" class="inline-sub" style="display:none">
+  <h4>What voltage is your drill battery?</h4>
+  <p class="note" style="margin:0 0 12px">Look for the voltage printed on your battery label (for example, 18V or 20V). This helps us confirm the correct power adapter.</p>
+  <div class="options" id="batteryVoltageChoices">
+    <button type="button" class="option" data-battery-voltage="12V">12V</button>
+    <button type="button" class="option" data-battery-voltage="18V">18V</button>
+    <button type="button" class="option" data-battery-voltage="20V">20V</button>
+    <button type="button" class="option" data-battery-voltage="Other">Other voltage</button>
+    <button type="button" class="option" data-battery-voltage="Not sure">I'm not sure</button>
+  </div>
+  <div id="batteryVoltageOtherWrap" style="display:none;margin-top:10px"><input id="batteryVoltageOther" type="text" placeholder="Enter the voltage printed on your battery (e.g., 24V)" style="width:100%;padding:14px;border-radius:10px;border:1px solid #30343a;background:#0d1013;color:#eee"></div>
+  <p id="batteryPhotoNote" class="custom-paint-note" style="display:none">Not sure what voltage your battery is? Please email a clear photo of the battery label to <a href="mailto:built2boomcustoms@gmail.com?subject=Drill%20Battery%20Photo%20for%20Speaker%20Build" style="color:#fff;text-decoration:underline">built2boomcustoms@gmail.com</a> so we can confirm compatibility before building. Include the name used on your order.</p>
+</div>
 </div>
 
 <div class="step"><h3>7. Speaker Size</h3><div class="options" id="speakerSizeOptions"></div></div>
@@ -167,7 +182,7 @@ const state={};
 const base=0;
 
 function getBuildPayload(){
-  const groups=['case','color','customColor','sub','subCount','subBrand','subLocation','subSize','count','tweeters','power','otherPower','brand','size','extra','customLogoText','customLogoFont','customLogoLocation'];
+  const groups=['case','color','customColor','sub','subCount','subBrand','subLocation','subSize','count','tweeters','power','otherPower','batteryVoltage','brand','size','extra','customLogoText','customLogoFont','customLogoLocation'];
   const selections={};
   groups.forEach(key=>{
     const picked=state[key]||getDefault(key);
@@ -180,6 +195,12 @@ function getBuildPayload(){
 function startCheckout(){
   const build=getBuildPayload();
   if(build.selections.sub?.value==='Yes' && !build.selections.subBrand){alert('Choose an available subwoofer size and brand.');return;}
+  const power=build.selections.power?.value;
+  if(power && power!=='Include Battery and Charger Bundle'){
+    const voltage=build.selections.batteryVoltage?.value;
+    if(!voltage){alert('Please select your drill battery voltage, or choose I’m not sure.');document.getElementById('batteryVoltageWrap')?.scrollIntoView({behavior:'smooth',block:'center'});return;}
+    if(voltage==='Other' || voltage==='Other voltage') {alert('Please enter your battery voltage.');return;}
+  }
   sessionStorage.setItem('b2b_build',JSON.stringify(build));
   window.location.href='payment.html';
 }
@@ -187,11 +208,11 @@ function startCheckout(){
 document.getElementById('checkoutBtn')?.addEventListener('click',startCheckout);
 
 const speakerConfigs={
-  '2800':{counts:[[1,0]],sizes:[['6.5"',0],['6×9',0]],tweeters:[[0,0],[1,20],[2,40],[3,60],[4,80]]},
-  '3800':{counts:[[1,0],[2,0]],sizes:[['6.5"',0],['6×9',0]],tweeters:[[0,0],[1,20],[2,40],[3,60],[4,80]]},
-  '4800':{counts:[[1,0],[2,0]],sizes:[['6.5"',0],['6×9',0]],tweeters:[[0,0],[1,20],[2,40],[3,60],[4,80]]},
-  '5800':{counts:[[1,0],[2,0],[3,0],[4,0]],sizes:[['6.5"',0],['6×9',0]],tweeters:[[0,0],[1,20],[2,40],[3,60],[4,80]]},
-  '9800':{counts:[[2,0],[4,0],[6,0],[8,0]],sizes:[['6.5"',0],['6×9',0]],tweeters:[[0,0],[1,20],[2,40],[3,60],[4,80]]}
+  '2800':{counts:[[1,0]],sizes:[['6.5"',0],['6×9',0]],tweeters:[[0,0],[1,20],[2,40],[3,55],[4,70]]},
+  '3800':{counts:[[1,0],[2,0]],sizes:[['6.5"',0],['6×9',0]],tweeters:[[0,0],[1,20],[2,40],[3,55],[4,70]]},
+  '4800':{counts:[[1,0],[2,0]],sizes:[['6.5"',0],['6×9',0]],tweeters:[[0,0],[1,20],[2,40],[3,55],[4,70]]},
+  '5800':{counts:[[1,0],[2,0],[3,0],[4,0]],sizes:[['6.5"',0],['6×9',0]],tweeters:[[0,0],[1,20],[2,40],[3,55],[4,70]]},
+  '9800':{counts:[[2,0],[4,0],[6,0],[8,0]],sizes:[['6.5"',0],['6×9',0]],tweeters:[[0,0],[1,20],[2,40],[3,55],[4,70]]}
 };
 
 const subwooferSizes={
@@ -204,9 +225,14 @@ const subwooferSizes={
 
 // Prices are per subwoofer, not per pair. Offer only verified size/brand combinations.
 const subwooferBrandsBySize={
+  "4\"": {"Generic-Amazon": 35},
+  "5\"": {"Generic-Amazon": 35},
   "6.5\"": {
     "Pyle": 55,
-    "Skar Audio": 95
+    "Skar Audio": 95,
+    "CT Sounds": 100,
+    "PRV Audio": 100,
+    "DS18": 135
   },
   "8\"": {
     "Pyle": 65,
@@ -426,6 +452,20 @@ function closeCaseModal(){
   modal.classList.remove('open'); modal.setAttribute('aria-hidden','true');
 }
 
+function updateBatteryVoltage(){
+  const power=(state.power||getDefault('power'))?.value;
+  const needsBattery=!!power && power!=='Include Battery and Charger Bundle';
+  document.getElementById('batteryVoltageWrap').style.display=needsBattery?'block':'none';
+  if(!needsBattery){delete state.batteryVoltage;return;}
+  const chosen=state.batteryVoltage?.value||'';
+  const isOther=chosen && !['12V','18V','20V','Not sure'].includes(chosen);
+  document.querySelectorAll('[data-battery-voltage]').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.batteryVoltage===(isOther?'Other':chosen));
+  });
+  document.getElementById('batteryVoltageOtherWrap').style.display=isOther?'block':'none';
+  document.getElementById('batteryPhotoNote').style.display=chosen==='Not sure'?'block':'none';
+}
+
 function render(){
   const buildCase=(state.case||getDefault('case')).value;
   const buildInfo=caseInfo[buildCase]||caseInfo['2800'];
@@ -437,6 +477,7 @@ function render(){
   updateSpeakerOptions();
   updateColorOptions();
   updateSubwoofer();
+  updateBatteryVoltage();
   const logoWrap=document.getElementById('logoWrap');
   const extraValue=(state.extra||getDefault('extra'))?.value||'None';
   logoWrap.style.display=extraValue.includes('Custom Name / Logo')?'block':'none';
@@ -446,7 +487,7 @@ function render(){
   if(!multiSpeakers && state.customLogoLocation?.value==='Below and Between the Speakers'){delete state.customLogoLocation;logoLocation.value='';}
   const groups=[
     ['case','Box Size'],['color','Color'],['count','Speakers'],['sub','Subwoofer'],['subCount','Subwoofers'],['subBrand','Subwoofer Brand'],['subLocation','Sub Location'],['tweeters','Tweeters'],['size','Speaker Size'],
-    ['power','Power System'],['otherPower','Custom Power Brand'],['brand','Speaker Brand'],['customColor','Custom Color'],['subSize','Sub Size'],['extra','Extras'],['customLogoText','Logo Text'],['customLogoFont','Logo Font'],['customLogoLocation','Logo Location']
+    ['power','Power System'],['otherPower','Custom Power Brand'],['batteryVoltage','Battery Voltage'],['brand','Speaker Brand'],['customColor','Custom Color'],['subSize','Sub Size'],['extra','Extras'],['customLogoText','Logo Text'],['customLogoFont','Logo Font'],['customLogoLocation','Logo Location']
   ];
   let total=base, html='';
   groups.forEach(([key,label])=>{
@@ -599,6 +640,23 @@ document.getElementById('extrasOptions').addEventListener('click',e=>{
   const needsLogo=selected.includes('Custom Name / Logo');
   document.getElementById('logoWrap').style.display=needsLogo?'block':'none';
   if(!needsLogo){delete state.customLogoText;delete state.customLogoFont;delete state.customLogoLocation;}
+  render();
+});
+
+document.getElementById('batteryVoltageChoices').addEventListener('click',e=>{
+  const btn=e.target.closest('[data-battery-voltage]');
+  if(!btn)return;
+  const choice=btn.dataset.batteryVoltage;
+  if(choice==='Other'){
+    const value=document.getElementById('batteryVoltageOther').value.trim();
+    state.batteryVoltage={value:value||'Other',price:0};
+  }else{
+    state.batteryVoltage={value:choice,price:0};
+  }
+  render();
+});
+document.getElementById('batteryVoltageOther').addEventListener('input',e=>{
+  state.batteryVoltage={value:e.target.value.trim()||'Other',price:0};
   render();
 });
 
