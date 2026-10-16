@@ -8,6 +8,7 @@ app.use(express.json({ limit: '100kb' }));
 app.use(express.static(__dirname));
 
 const BOX = {
+  1800: 25,
   2800: 40,
   3800: 50,
   4800: 70,
@@ -16,6 +17,7 @@ const BOX = {
 };
 
 const SHIPPING = {
+  1800: 20,
   2800: 20,
   3800: 25,
   4800: 35,
@@ -54,6 +56,7 @@ const SUB_BRANDS_BY_SIZE = {
     'DS18': 135
   },
   '8"': {
+    'Generic-Amazon': 35,
     'Pyle': 65,
     'Skar Audio': 105,
     'Kicker': 125,
@@ -96,6 +99,25 @@ const POWER = {
   'Other': 25
 };
 
+const TWEETER_PRICES = {
+  0: 0,
+  1: 20,
+  2: 40,
+  3: 55,
+  4: 70
+};
+
+const SMALL_BOX_BRANDS = [
+  'Pyle',
+  'Boss Audio',
+  'Skar Audio',
+  'DS18',
+  'Kicker',
+  'Kenwood',
+  'Pioneer',
+  'Rockford Fosgate'
+];
+
 function val(build, key) {
   return build?.selections?.[key]?.value ?? '';
 }
@@ -116,10 +138,6 @@ function calculate(build) {
 
   total += BOX[box];
 
-  if (val(build, 'color') === 'Custom') {
-    total += 35;
-  }
-
   const count = Number(
     (String(val(build, 'count')).match(/\d+/) || ['0'])[0]
   );
@@ -128,12 +146,48 @@ function calculate(build) {
     throw new Error('Invalid speaker count.');
   }
 
+  // Small box restrictions
+  if (box === '1800') {
+    if (![1, 2].includes(count)) {
+      throw new Error(
+        'Small box supports only 1 or 2 speakers.'
+      );
+    }
+
+    if (val(build, 'size') !== '4"') {
+      throw new Error(
+        'Small box requires 4-inch speakers.'
+      );
+    }
+
+    if (val(build, 'sub') === 'Yes') {
+      throw new Error(
+        'Small box cannot have a subwoofer.'
+      );
+    }
+  }
+
+  if (val(build, 'color') === 'Custom') {
+    total += 35;
+  }
+
   const brand = val(build, 'brand');
 
   if (!Object.hasOwn(BRANDS, brand)) {
     throw new Error('Invalid speaker brand.');
   }
 
+  if (
+    box === '1800' &&
+    !SMALL_BOX_BRANDS.includes(brand)
+  ) {
+    throw new Error(
+      'Choose an available 4-inch speaker brand for the Small box.'
+    );
+  }
+
+  // Speaker prices are based on the pair price.
+  // One speaker costs half the pair price.
   total += BRANDS[brand] * count / 2;
 
   const sub = val(build, 'sub') === 'Yes';
@@ -144,17 +198,20 @@ function calculate(build) {
       : (sub ? 1 : 0);
 
   if (sub) {
-    const sb = val(build, 'subBrand');
-    const size = val(build, 'subSize');
-    const available = SUB_BRANDS_BY_SIZE[size];
+    const subBrand = val(build, 'subBrand');
+    const subSize = val(build, 'subSize');
+    const available = SUB_BRANDS_BY_SIZE[subSize];
 
-    if (!available || !Object.hasOwn(available, sb)) {
+    if (
+      !available ||
+      !Object.hasOwn(available, subBrand)
+    ) {
       throw new Error(
         'Invalid subwoofer brand for selected size.'
       );
     }
 
-    total += available[sb] * subCount;
+    total += available[subBrand] * subCount;
   }
 
   const power = val(build, 'power');
@@ -168,14 +225,6 @@ function calculate(build) {
   const tweeterCount = Number(
     (String(val(build, 'tweeters')).match(/\d+/) || ['0'])[0]
   );
-
-  const TWEETER_PRICES = {
-    0: 0,
-    1: 20,
-    2: 40,
-    3: 55,
-    4: 70
-  };
 
   if (!Object.hasOwn(TWEETER_PRICES, tweeterCount)) {
     throw new Error('Invalid tweeter count.');
@@ -198,7 +247,9 @@ function calculate(build) {
     total += 30;
   }
 
-  total += Math.ceil(count / 2) * 35 + subCount * 35;
+  // Amplifier pricing
+  total += Math.ceil(count / 2) * 35;
+  total += subCount * 35;
 
   return Math.round(total);
 }
@@ -228,22 +279,27 @@ async function accessToken() {
       ? 'https://api-m.paypal.com'
       : 'https://api-m.sandbox.paypal.com';
 
-  const response = await fetch(base + '/v1/oauth2/token', {
-    method: 'POST',
-    headers: {
-      Authorization:
-        'Basic ' +
-        Buffer.from(id + ':' + secret).toString('base64'),
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: 'grant_type=client_credentials'
-  });
+  const response = await fetch(
+    base + '/v1/oauth2/token',
+    {
+      method: 'POST',
+      headers: {
+        Authorization:
+          'Basic ' +
+          Buffer.from(id + ':' + secret).toString('base64'),
+        'Content-Type':
+          'application/x-www-form-urlencoded'
+      },
+      body: 'grant_type=client_credentials'
+    }
+  );
 
   const data = await response.json();
 
   if (!response.ok) {
     throw new Error(
-      data.error_description || 'PayPal authentication failed.'
+      data.error_description ||
+      'PayPal authentication failed.'
     );
   }
 
@@ -304,7 +360,8 @@ app.post('/api/paypal/orders', async (req, res) => {
       intent: 'CAPTURE',
       purchase_units: [
         {
-          description: 'Built2BoomCustoms Custom Speaker Build',
+          description:
+            'Built2BoomCustoms Custom Speaker Build',
           custom_id: compact,
           amount: {
             currency_code: 'USD',
@@ -336,9 +393,11 @@ app.post('/api/paypal/orders', async (req, res) => {
             },
             address: {
               address_line_1: customer.address1,
-              address_line_2: customer.address2 || undefined,
+              address_line_2:
+                customer.address2 || undefined,
               admin_area_2: customer.city,
-              admin_area_1: customer.state.toUpperCase(),
+              admin_area_1:
+                customer.state.toUpperCase(),
               postal_code: customer.zip,
               country_code: 'US'
             }
@@ -349,10 +408,13 @@ app.post('/api/paypal/orders', async (req, res) => {
         paypal: {
           experience_context: {
             brand_name: 'Built2BoomCustoms',
-            shipping_preference: 'SET_PROVIDED_ADDRESS',
+            shipping_preference:
+              'SET_PROVIDED_ADDRESS',
             user_action: 'PAY_NOW',
-            return_url: `${site}/api/paypal/capture`,
-            cancel_url: `${site}/payment.html`
+            return_url:
+              `${site}/api/paypal/capture`,
+            cancel_url:
+              `${site}/payment.html`
           }
         }
       }
@@ -365,7 +427,8 @@ app.post('/api/paypal/orders', async (req, res) => {
         headers: {
           Authorization: 'Bearer ' + token,
           'Content-Type': 'application/json',
-          'PayPal-Request-Id': 'b2b-' + Date.now()
+          'PayPal-Request-Id':
+            'b2b-' + Date.now()
         },
         body: JSON.stringify(body)
       }
@@ -375,7 +438,8 @@ app.post('/api/paypal/orders', async (req, res) => {
 
     if (!response.ok) {
       throw new Error(
-        data.message || 'Unable to create PayPal order.'
+        data.message ||
+        'Unable to create PayPal order.'
       );
     }
 
@@ -400,7 +464,9 @@ app.post('/api/paypal/orders', async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({
-      error: error.message || 'Unable to create payment.'
+      error:
+        error.message ||
+        'Unable to create payment.'
     });
   }
 });
@@ -410,7 +476,9 @@ app.get('/api/paypal/capture', async (req, res) => {
     const orderID = req.query.token;
 
     if (!orderID) {
-      throw new Error('Missing PayPal order ID.');
+      throw new Error(
+        'Missing PayPal order ID.'
+      );
     }
 
     const { token, base } = await accessToken();
@@ -430,20 +498,25 @@ app.get('/api/paypal/capture', async (req, res) => {
 
     if (!response.ok) {
       throw new Error(
-        data.message || 'Payment capture failed.'
+        data.message ||
+        'Payment capture failed.'
       );
     }
 
     res.redirect(
-      '/success.html?order_id=' + encodeURIComponent(orderID)
+      '/success.html?order_id=' +
+      encodeURIComponent(orderID)
     );
   } catch (error) {
     res.status(400).send(
-      'Payment could not be completed: ' + error.message
+      'Payment could not be completed: ' +
+      error.message
     );
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Built2BoomCustoms running on ${PORT}`);
+  console.log(
+    `Built2BoomCustoms running on ${PORT}`
+  );
 });
