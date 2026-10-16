@@ -1,397 +1,449 @@
-const express=require('express');
-const path=require('path');
-const app=express();
-const PORT=process.env.PORT||3000;
+const express = require('express');
+const path = require('path');
 
-app.use(express.json({limit:'100kb'}));
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json({ limit: '100kb' }));
 app.use(express.static(__dirname));
 
-const BOX={
-  2800:40,
-  3800:50,
-  4800:70,
-  5800:100,
-  9800:160
+const BOX = {
+  2800: 40,
+  3800: 50,
+  4800: 70,
+  5800: 100,
+  9800: 160
 };
 
-const SHIPPING={
-  2800:20,
-  3800:25,
-  4800:35,
-  5800:50,
-  9800:95
+const SHIPPING = {
+  2800: 20,
+  3800: 25,
+  4800: 35,
+  5800: 50,
+  9800: 95
 };
 
-const BRANDS={
-  'Kenwood':50,
-  'Pyle':50,
-  'Skar Audio':60,
-  'Pioneer':60,
-  'Boss Audio':60,
-  'DS18':70,
-  'Memphis Audio':85,
-  'Kicker':90,
-  'JBL':90,
-  'Infinity':90,
-  'Rockford Fosgate':100,
-  'Wet Sounds':160,
-  'JL Audio':190
+const BRANDS = {
+  'Kenwood': 50,
+  'Pyle': 50,
+  'Skar Audio': 60,
+  'Pioneer': 60,
+  'Boss Audio': 60,
+  'DS18': 70,
+  'Memphis Audio': 85,
+  'Kicker': 90,
+  'JBL': 90,
+  'Infinity': 90,
+  'Rockford Fosgate': 100,
+  'Wet Sounds': 160,
+  'JL Audio': 190
 };
 
-const SUB_BRANDS_BY_SIZE={
-  '6.5"':{
-    'Pyle':55,
-    'Skar Audio':95
+const SUB_BRANDS_BY_SIZE = {
+  '4"': {
+    'Generic-Amazon': 35
   },
-  '8"':{
-    'Pyle':65,
-    'Skar Audio':105,
-    'Kicker':125,
-    'Rockford Fosgate':175,
-    'Pioneer':185,
-    'JL Audio':225,
-    'Memphis Audio':225
+  '5"': {
+    'Generic-Amazon': 35
   },
-  '10"':{
-    'Pyle':120,
-    'Skar Audio':145,
-    'Kicker':175,
-    'Rockford Fosgate':170,
-    'Pioneer':205,
-    'JBL':160,
-    'JL Audio':170,
-    'DS18':170,
-    'Wet Sounds':440
+  '6.5"': {
+    'Pyle': 55,
+    'Skar Audio': 95,
+    'CT Sounds': 100,
+    'PRV Audio': 100,
+    'DS18': 135
   },
-  '12"':{
-    'Pyle':140,
-    'Skar Audio':165,
-    'Kicker':185,
-    'Rockford Fosgate':225,
-    'Pioneer':175,
-    'JBL':170,
-    'JL Audio':190,
-    'DS18':175,
-    'Wet Sounds':550
+  '8"': {
+    'Pyle': 65,
+    'Skar Audio': 105,
+    'Kicker': 125,
+    'Rockford Fosgate': 175,
+    'Pioneer': 185,
+    'JL Audio': 225,
+    'Memphis Audio': 225
+  },
+  '10"': {
+    'Pyle': 120,
+    'Skar Audio': 145,
+    'Kicker': 175,
+    'Rockford Fosgate': 170,
+    'Pioneer': 205,
+    'JBL': 160,
+    'JL Audio': 170,
+    'DS18': 170,
+    'Wet Sounds': 440
+  },
+  '12"': {
+    'Pyle': 140,
+    'Skar Audio': 165,
+    'Kicker': 185,
+    'Rockford Fosgate': 225,
+    'Pioneer': 175,
+    'JBL': 170,
+    'JL Audio': 190,
+    'DS18': 175,
+    'Wet Sounds': 550
   }
 };
 
-const POWER={
-  'Include Battery and Charger Bundle':70,
-  'DeWalt 20V':25,
-  'Milwaukee M18':25,
-  'Hart 20V':25,
-  'Ryobi 18V':25,
-  'Makita 18V':25,
-  'Other':25
+const POWER = {
+  'Include Battery and Charger Bundle': 70,
+  'DeWalt 20V': 25,
+  'Milwaukee M18': 25,
+  'Hart 20V': 25,
+  'Ryobi 18V': 25,
+  'Makita 18V': 25,
+  'Other': 25
 };
 
-function val(b,k){
-  return b?.selections?.[k]?.value??'';
+function val(build, key) {
+  return build?.selections?.[key]?.value ?? '';
 }
 
-function caseCode(build){
-  const code=String(val(build,'case'));
-  return Object.hasOwn(BOX,code)?code:'';
+function caseCode(build) {
+  const code = String(val(build, 'case'));
+  return Object.hasOwn(BOX, code) ? code : '';
 }
 
-function calculate(build){
-  let total=0;
+function calculate(build) {
+  let total = 0;
 
-  const box=caseCode(build);
+  const box = caseCode(build);
 
-  if(!(box in BOX)){
+  if (!(box in BOX)) {
     throw new Error('Invalid box selection.');
   }
 
-  total+=BOX[box];
+  total += BOX[box];
 
-  if(val(build,'color')==='Custom'){
-    total+=35;
+  if (val(build, 'color') === 'Custom') {
+    total += 35;
   }
 
-  const count=Number(
-    (String(val(build,'count')).match(/\d+/)||['0'])[0]
+  const count = Number(
+    (String(val(build, 'count')).match(/\d+/) || ['0'])[0]
   );
 
-  if(!count){
+  if (!count) {
     throw new Error('Invalid speaker count.');
   }
 
-  const brand=val(build,'brand');
+  const brand = val(build, 'brand');
 
-  if(!Object.hasOwn(BRANDS,brand)){
+  if (!Object.hasOwn(BRANDS, brand)) {
     throw new Error('Invalid speaker brand.');
   }
 
-  total+=BRANDS[brand]*count/2;
+  total += BRANDS[brand] * count / 2;
 
-  const sub=val(build,'sub')==='Yes';
+  const sub = val(build, 'sub') === 'Yes';
 
-  const subCount=
-    val(build,'subCount')==='2 Subwoofers'
+  const subCount =
+    val(build, 'subCount') === '2 Subwoofers'
       ? 2
-      : (sub?1:0);
+      : (sub ? 1 : 0);
 
-  if(sub){
-    const sb=val(build,'subBrand');
-    const size=val(build,'subSize');
-    const available=SUB_BRANDS_BY_SIZE[size];
+  if (sub) {
+    const sb = val(build, 'subBrand');
+    const size = val(build, 'subSize');
+    const available = SUB_BRANDS_BY_SIZE[size];
 
-    if(!available||!Object.hasOwn(available,sb)){
+    if (!available || !Object.hasOwn(available, sb)) {
       throw new Error(
         'Invalid subwoofer brand for selected size.'
       );
     }
 
-    total+=available[sb]*subCount;
+    total += available[sb] * subCount;
   }
 
-  const power=val(build,'power');
+  const power = val(build, 'power');
 
-  if(!Object.hasOwn(POWER,power)){
+  if (!Object.hasOwn(POWER, power)) {
     throw new Error('Invalid power selection.');
   }
 
-  total+=POWER[power];
+  total += POWER[power];
 
-  total+=Number(
-    (String(val(build,'tweeters')).match(/\d+/)||['0'])[0]
-  )*20;
+  const tweeterCount = Number(
+    (String(val(build, 'tweeters')).match(/\d+/) || ['0'])[0]
+  );
 
-  const extra=val(build,'extra');
+  const TWEETER_PRICES = {
+    0: 0,
+    1: 20,
+    2: 40,
+    3: 55,
+    4: 70
+  };
 
-  const extras=extra==='None'
-    ? []
-    : String(extra).split(' + ').filter(Boolean);
-
-  if(extras.includes('Battery Voltage and Charging Port')){
-    total+=35;
+  if (!Object.hasOwn(TWEETER_PRICES, tweeterCount)) {
+    throw new Error('Invalid tweeter count.');
   }
 
-  if(extras.includes('Custom Name / Logo')){
-    total+=30;
+  total += TWEETER_PRICES[tweeterCount];
+
+  const extra = val(build, 'extra');
+
+  const extras =
+    extra === 'None'
+      ? []
+      : String(extra).split(' + ').filter(Boolean);
+
+  if (extras.includes('Battery Voltage and Charging Port')) {
+    total += 35;
   }
 
-  total+=Math.ceil(count/2)*35+subCount*35;
+  if (extras.includes('Custom Name / Logo')) {
+    total += 30;
+  }
+
+  total += Math.ceil(count / 2) * 35 + subCount * 35;
 
   return Math.round(total);
 }
 
-function shipping(build){
-  const c=caseCode(build);
+function shipping(build) {
+  const code = caseCode(build);
 
-  if(!(c in SHIPPING)){
+  if (!(code in SHIPPING)) {
     throw new Error('Unable to calculate shipping.');
   }
 
-  return SHIPPING[c];
+  return SHIPPING[code];
 }
 
-async function accessToken(){
-  const id=process.env.PAYPAL_CLIENT_ID;
-  const secret=process.env.PAYPAL_CLIENT_SECRET;
+async function accessToken() {
+  const id = process.env.PAYPAL_CLIENT_ID;
+  const secret = process.env.PAYPAL_CLIENT_SECRET;
 
-  if(!id||!secret){
+  if (!id || !secret) {
     throw new Error(
       'PayPal is not connected yet. Add PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET to the server environment.'
     );
   }
 
-  const base=process.env.PAYPAL_ENV==='live'
-    ? 'https://api-m.paypal.com'
-    : 'https://api-m.sandbox.paypal.com';
+  const base =
+    process.env.PAYPAL_ENV === 'live'
+      ? 'https://api-m.paypal.com'
+      : 'https://api-m.sandbox.paypal.com';
 
-  const r=await fetch(base+'/v1/oauth2/token',{
-    method:'POST',
-    headers:{
-      Authorization:'Basic '+
-        Buffer.from(id+':'+secret).toString('base64'),
-      'Content-Type':'application/x-www-form-urlencoded'
+  const response = await fetch(base + '/v1/oauth2/token', {
+    method: 'POST',
+    headers: {
+      Authorization:
+        'Basic ' +
+        Buffer.from(id + ':' + secret).toString('base64'),
+      'Content-Type': 'application/x-www-form-urlencoded'
     },
-    body:'grant_type=client_credentials'
+    body: 'grant_type=client_credentials'
   });
 
-  const j=await r.json();
+  const data = await response.json();
 
-  if(!r.ok){
+  if (!response.ok) {
     throw new Error(
-      j.error_description||'PayPal authentication failed.'
+      data.error_description || 'PayPal authentication failed.'
     );
   }
 
-  return {token:j.access_token,base};
+  return {
+    token: data.access_token,
+    base
+  };
 }
 
-app.post('/api/paypal/orders',async(req,res)=>{
-  try{
-    const {customer,build}=req.body||{};
+app.post('/api/paypal/orders', async (req, res) => {
+  try {
+    const { customer, build } = req.body || {};
 
-    if(
-      !customer?.name||
-      !customer?.email||
-      !customer?.phone||
-      !customer?.address1||
-      !customer?.city||
-      !customer?.state||
-      !customer?.zip||
+    if (
+      !customer?.name ||
+      !customer?.email ||
+      !customer?.phone ||
+      !customer?.address1 ||
+      !customer?.city ||
+      !customer?.state ||
+      !customer?.zip ||
       !build
-    ){
+    ) {
       throw new Error(
         'Missing customer, shipping, or build information.'
       );
     }
 
-    const subtotal=calculate(build);
-    const ship=shipping(build);
-    const grand=subtotal+ship;
+    const subtotal = calculate(build);
+    const ship = shipping(build);
+    const grand = subtotal + ship;
 
-    const {token,base}=await accessToken();
+    const { token, base } = await accessToken();
 
-    const site=process.env.PUBLIC_URL||
+    const site =
+      process.env.PUBLIC_URL ||
       `${req.protocol}://${req.get('host')}`;
 
-    const compact=Object.values(build.selections||{})
-      .map(x=>x.value)
+    const compact = [
+      val(build, 'batteryVoltage')
+        ? 'Battery ' + val(build, 'batteryVoltage')
+        : '',
+      val(build, 'otherPower')
+        ? 'Power ' + val(build, 'otherPower')
+        : '',
+      ...Object.entries(build.selections || {})
+        .filter(
+          ([key]) =>
+            !['batteryVoltage', 'otherPower'].includes(key)
+        )
+        .map(([, item]) => item.value)
+    ]
       .filter(Boolean)
       .join(' | ')
-      .slice(0,120);
+      .slice(0, 120);
 
-    const body={
-      intent:'CAPTURE',
-      purchase_units:[{
-        description:'Built2BoomCustoms Custom Speaker Build',
-        custom_id:compact,
-        amount:{
-          currency_code:'USD',
-          value:grand.toFixed(2),
-          breakdown:{
-            item_total:{
-              currency_code:'USD',
-              value:subtotal.toFixed(2)
+    const body = {
+      intent: 'CAPTURE',
+      purchase_units: [
+        {
+          description: 'Built2BoomCustoms Custom Speaker Build',
+          custom_id: compact,
+          amount: {
+            currency_code: 'USD',
+            value: grand.toFixed(2),
+            breakdown: {
+              item_total: {
+                currency_code: 'USD',
+                value: subtotal.toFixed(2)
+              },
+              shipping: {
+                currency_code: 'USD',
+                value: ship.toFixed(2)
+              }
+            }
+          },
+          items: [
+            {
+              name: 'Custom Speaker Build',
+              quantity: '1',
+              unit_amount: {
+                currency_code: 'USD',
+                value: subtotal.toFixed(2)
+              }
+            }
+          ],
+          shipping: {
+            name: {
+              full_name: customer.name
             },
-            shipping:{
-              currency_code:'USD',
-              value:ship.toFixed(2)
+            address: {
+              address_line_1: customer.address1,
+              address_line_2: customer.address2 || undefined,
+              admin_area_2: customer.city,
+              admin_area_1: customer.state.toUpperCase(),
+              postal_code: customer.zip,
+              country_code: 'US'
             }
           }
-        },
-        items:[{
-          name:'Custom Speaker Build',
-          quantity:'1',
-          unit_amount:{
-            currency_code:'USD',
-            value:subtotal.toFixed(2)
-          }
-        }],
-        shipping:{
-          name:{full_name:customer.name},
-          address:{
-            address_line_1:customer.address1,
-            address_line_2:customer.address2||undefined,
-            admin_area_2:customer.city,
-            admin_area_1:customer.state.toUpperCase(),
-            postal_code:customer.zip,
-            country_code:'US'
-          }
         }
-      }],
-      payment_source:{
-        paypal:{
-          experience_context:{
-            brand_name:'Built2BoomCustoms',
-            shipping_preference:'SET_PROVIDED_ADDRESS',
-            user_action:'PAY_NOW',
-            return_url:`${site}/api/paypal/capture`,
-            cancel_url:`${site}/payment.html`
+      ],
+      payment_source: {
+        paypal: {
+          experience_context: {
+            brand_name: 'Built2BoomCustoms',
+            shipping_preference: 'SET_PROVIDED_ADDRESS',
+            user_action: 'PAY_NOW',
+            return_url: `${site}/api/paypal/capture`,
+            cancel_url: `${site}/payment.html`
           }
         }
       }
     };
 
-    const r=await fetch(base+'/v2/checkout/orders',{
-      method:'POST',
-      headers:{
-        Authorization:'Bearer '+token,
-        'Content-Type':'application/json',
-        'PayPal-Request-Id':'b2b-'+Date.now()
-      },
-      body:JSON.stringify(body)
-    });
+    const response = await fetch(
+      base + '/v2/checkout/orders',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + token,
+          'Content-Type': 'application/json',
+          'PayPal-Request-Id': 'b2b-' + Date.now()
+        },
+        body: JSON.stringify(body)
+      }
+    );
 
-    const j=await r.json();
+    const data = await response.json();
 
-    if(!r.ok){
+    if (!response.ok) {
       throw new Error(
-        j.message||'Unable to create PayPal order.'
+        data.message || 'Unable to create PayPal order.'
       );
     }
 
-    const approve=j.links?.find(
-      x=>x.rel==='payer-action'||x.rel==='approve'
+    const approve = data.links?.find(
+      (link) =>
+        link.rel === 'payer-action' ||
+        link.rel === 'approve'
     )?.href;
 
-    if(!approve){
+    if (!approve) {
       throw new Error(
         'PayPal approval link was not returned.'
       );
     }
 
     res.json({
-      orderId:j.id,
-      approveUrl:approve,
+      orderId: data.id,
+      approveUrl: approve,
       subtotal,
-      shipping:ship,
-      total:grand
+      shipping: ship,
+      total: grand
     });
-
-  }catch(e){
+  } catch (error) {
     res.status(400).json({
-      error:e.message||'Unable to create payment.'
+      error: error.message || 'Unable to create payment.'
     });
   }
 });
 
-app.get('/api/paypal/capture',async(req,res)=>{
-  try{
-    const orderID=req.query.token;
+app.get('/api/paypal/capture', async (req, res) => {
+  try {
+    const orderID = req.query.token;
 
-    if(!orderID){
+    if (!orderID) {
       throw new Error('Missing PayPal order ID.');
     }
 
-    const {token,base}=await accessToken();
+    const { token, base } = await accessToken();
 
-    const r=await fetch(
+    const response = await fetch(
       `${base}/v2/checkout/orders/${encodeURIComponent(orderID)}/capture`,
       {
-        method:'POST',
-        headers:{
-          Authorization:'Bearer '+token,
-          'Content-Type':'application/json'
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + token,
+          'Content-Type': 'application/json'
         }
       }
     );
 
-    const j=await r.json();
+    const data = await response.json();
 
-    if(!r.ok){
+    if (!response.ok) {
       throw new Error(
-        j.message||'Payment capture failed.'
+        data.message || 'Payment capture failed.'
       );
     }
 
     res.redirect(
-      '/success.html?order_id='+encodeURIComponent(orderID)
+      '/success.html?order_id=' + encodeURIComponent(orderID)
     );
-
-  }catch(e){
+  } catch (error) {
     res.status(400).send(
-      'Payment could not be completed: '+e.message
+      'Payment could not be completed: ' + error.message
     );
   }
 });
 
-app.listen(PORT,()=>{
+app.listen(PORT, () => {
   console.log(`Built2BoomCustoms running on ${PORT}`);
 });
