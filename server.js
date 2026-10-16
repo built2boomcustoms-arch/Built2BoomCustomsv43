@@ -90,13 +90,13 @@ const SUB_BRANDS_BY_SIZE = {
 };
 
 const POWER = {
-  'Include Battery and Charger Bundle': 70,
-  'DeWalt 20V': 25,
-  'Milwaukee M18': 25,
-  'Hart 20V': 25,
-  'Ryobi 18V': 25,
-  'Makita 18V': 25,
-  'Other': 25
+  'Include Battery and Charger Bundle': 60,
+  'DeWalt 20V': 15,
+  'Milwaukee M18': 15,
+  'Hart 20V': 15,
+  'Ryobi 18V': 15,
+  'Makita 18V': 15,
+  'Other': 15
 };
 
 const TWEETER_PRICES = {
@@ -146,7 +146,7 @@ function calculate(build) {
     throw new Error('Invalid speaker count.');
   }
 
-  // Small box restrictions
+  // Small box: 1 or 2 four-inch speakers, no subwoofer.
   if (box === '1800') {
     if (![1, 2].includes(count)) {
       throw new Error(
@@ -186,8 +186,7 @@ function calculate(build) {
     );
   }
 
-  // Speaker prices are based on the pair price.
-  // One speaker costs half the pair price.
+  // Speaker brand prices are per pair.
   total += BRANDS[brand] * count / 2;
 
   const sub = val(build, 'sub') === 'Yes';
@@ -287,8 +286,7 @@ async function accessToken() {
         Authorization:
           'Basic ' +
           Buffer.from(id + ':' + secret).toString('base64'),
-        'Content-Type':
-          'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: 'grant_type=client_credentials'
     }
@@ -338,6 +336,7 @@ app.post('/api/paypal/orders', async (req, res) => {
       process.env.PUBLIC_URL ||
       `${req.protocol}://${req.get('host')}`;
 
+    // Short build reference included in PayPal order.
     const compact = [
       val(build, 'batteryVoltage')
         ? 'Battery ' + val(build, 'batteryVoltage')
@@ -516,7 +515,5 @@ app.get('/api/paypal/capture', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(
-    `Built2BoomCustoms running on ${PORT}`
-  );
+  console.log(`Built2BoomCustoms running on ${PORT}`);
 });
