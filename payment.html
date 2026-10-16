@@ -187,7 +187,7 @@ Carrier-calculated rates can be connected later.
 const data = JSON.parse(sessionStorage.getItem('b2b_build') || 'null');
 
 const SHIPPING = {
-  1800:15,
+  1800:20,
   2800:20,
   3800:25,
   4800:35,
@@ -387,6 +387,10 @@ async function createOrder(){
     })
   });
 
+  const contentType = response.headers.get('content-type') || '';
+  if(!contentType.includes('application/json')){
+    throw new Error('Payment server returned an unexpected response. Please contact support.');
+  }
   const out = await response.json();
 
   if(!response.ok){
@@ -413,6 +417,10 @@ async function captureOrder(orderID){
     body:JSON.stringify({orderID})
   });
 
+  const contentType = response.headers.get('content-type') || '';
+  if(!contentType.includes('application/json')){
+    throw new Error('Payment server returned an unexpected response. Please contact support.');
+  }
   const out = await response.json();
 
   if(!response.ok || out.status !== 'COMPLETED'){
@@ -429,6 +437,10 @@ async function loadPaymentButtons(){
 
   try {
     const response = await fetch('/api/paypal/config');
+    const contentType = response.headers.get('content-type') || '';
+    if(!contentType.includes('application/json')){
+      throw new Error('PayPal configuration endpoint is unavailable. Please contact support.');
+    }
     const config = await response.json();
 
     if(!response.ok || !config.clientId){
