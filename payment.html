@@ -157,6 +157,7 @@ Powered by PayPal. Only eligible payment methods will appear.
 <button id="applyPromo" type="button">Apply</button>
 </div>
 <p class="promo-message" id="promoMessage" role="status" aria-live="polite"></p>
+<p class="promo-message" id="appliedCodes" aria-live="polite"></p>
 </div>
 
 <div class="totals">
@@ -203,7 +204,7 @@ const buildEl = document.getElementById('build');
 const promoInput = document.getElementById('promoCode');
 const promoMessage = document.getElementById('promoMessage');
 
-let appliedPromoCode = '';
+const appliedPromoCodes = new Set();
 
 function caseCode(){
   return String(data?.selections?.case?.value || '')
@@ -220,44 +221,48 @@ function money(n){
 
 function promoDiscount(){
   const sub = Number(data?.total || 0);
-  return appliedPromoCode === 'BOOMER' ? Math.round(sub * 15) / 100 : 0;
+  return appliedPromoCodes.has('BOOMER') ? Math.round(sub * 15) / 100 : 0;
 }
 
 function displayedTotal(){
   const sub = Number(data?.total || 0);
-  const ship = appliedPromoCode === 'KALVEN' ? 0 : shipCost();
+  const ship = appliedPromoCodes.has('KALVEN') ? 0 : shipCost();
   return Math.round((sub - promoDiscount() + ship) * 100) / 100;
 }
 
 function updateTotals(){
   const sub = Number(data?.total || 0);
-  const ship = appliedPromoCode === 'KALVEN' ? 0 : shipCost();
+  const ship = appliedPromoCodes.has('KALVEN') ? 0 : shipCost();
   const discount = promoDiscount();
   document.getElementById('subtotal').textContent = money(sub);
   document.getElementById('discountLine').style.display = discount > 0 ? 'flex' : 'none';
   document.getElementById('discount').textContent = '-' + money(discount);
   document.getElementById('shipping').textContent =
-    appliedPromoCode === 'KALVEN' ? 'FREE' : money(ship);
+    appliedPromoCodes.has('KALVEN') ? 'FREE' : money(ship);
   document.getElementById('total').textContent = money(displayedTotal());
 }
 
 function applyPromo(){
   const code = promoInput.value.trim().toUpperCase();
-
   if(code === 'KALVEN' || code === 'BOOMER'){
-    appliedPromoCode = code;
-    promoMessage.textContent = code === 'KALVEN'
-      ? '✓ KALVEN applied — free shipping!'
-      : '✓ BOOMER applied — 15% off your speaker build!';
-    promoMessage.className = 'promo-message promo-success';
-  } else {
-    appliedPromoCode = '';
-    promoMessage.textContent = code
-      ? 'Invalid promo code. Please try again.'
+    const alreadyApplied=appliedPromoCodes.has(code);
+    appliedPromoCodes.add(code);
+    promoMessage.textContent=alreadyApplied
+      ? code+' is already applied.'
+      : code==='KALVEN'
+        ? '✓ KALVEN applied — free shipping!'
+        : '✓ BOOMER applied — 15% off your speaker build!';
+    promoMessage.className='promo-message promo-success';
+    promoInput.value='';
+  }else{
+    promoMessage.textContent=code
+      ? 'Invalid promo code. Existing discounts are still applied.'
       : 'Enter a promo code first.';
-    promoMessage.className = 'promo-message promo-error';
+    promoMessage.className='promo-message promo-error';
   }
-
+  document.getElementById('appliedCodes').textContent=appliedPromoCodes.size
+    ? 'Active codes: '+[...appliedPromoCodes].join(' + ')
+    : '';
   updateTotals();
 }
 
@@ -271,12 +276,9 @@ promoInput.addEventListener('keydown', e => {
 });
 
 promoInput.addEventListener('input', () => {
-  if(appliedPromoCode){
-    appliedPromoCode = '';
-    promoMessage.textContent = 'Click Apply to use your code.';
-    promoMessage.className = 'promo-message';
-    updateTotals();
-  }
+  // Typing a new code must not remove codes already applied.
+  promoMessage.textContent='';
+  promoMessage.className='promo-message';
 });
 
 if(!data){
@@ -402,7 +404,7 @@ async function createOrder(){
     body:JSON.stringify({
       customer,
       build:data,
-      promoCode:appliedPromoCode
+      promoCode:[...appliedPromoCodes]
     })
   });
 
