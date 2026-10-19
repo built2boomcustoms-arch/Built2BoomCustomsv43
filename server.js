@@ -581,15 +581,20 @@ app.post('/api/paypal/orders',async(req,res)=>{
     }
 
     const subtotal=calculate(build);
-    const appliedPromoCode=String(promoCode||'').trim().toUpperCase();
-    if(appliedPromoCode && !['KALVEN','BOOMER'].includes(appliedPromoCode)){
+    // Accept one code (legacy checkout) or multiple codes (new checkout).
+    const rawCodes=Array.isArray(promoCode)?promoCode:[promoCode||''];
+    if(rawCodes.length>2 || rawCodes.some(code=>typeof code!=='string')){
+      throw new Error('Invalid promo codes.');
+    }
+    const promoCodes=[...new Set(rawCodes.map(code=>code.trim().toUpperCase()).filter(Boolean))];
+    if(promoCodes.some(code=>!['KALVEN','BOOMER'].includes(code))){
       throw new Error('Invalid promo code.');
     }
-    // BOOMER discounts the build only, not shipping.
-    const discount=appliedPromoCode==='BOOMER'
+    // BOOMER reduces only the build subtotal; KALVEN removes shipping.
+    const discount=promoCodes.includes('BOOMER')
       ? Math.round(subtotal*15)/100
       : 0;
-    const ship=appliedPromoCode==='KALVEN'?0:shipping(build);
+    const ship=promoCodes.includes('KALVEN')?0:shipping(build);
     const grand=Math.round((subtotal-discount+ship)*100)/100;
 
     const {token,base}=await accessToken();
@@ -746,7 +751,8 @@ app.post('/api/paypal/orders',async(req,res)=>{
         discount,
         shipping:ship,
         total:grand,
-        promoCode:appliedPromoCode,
+        promoCode:promoCodes.join(' + '),
+        promoCodes,
         createdAt:new Date().toISOString()
       }
     );
