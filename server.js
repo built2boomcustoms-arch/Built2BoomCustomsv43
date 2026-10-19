@@ -24,6 +24,7 @@ const SHIPPING={
 };
 
 const BRANDS={
+  'Scosche':50,
   'Kenwood':50,
   'Pyle':50,
   'Skar Audio':60,
@@ -37,6 +38,12 @@ const BRANDS={
   'Rockford Fosgate':100,
   'Wet Sounds':160,
   'JL Audio':190
+};
+
+// Pair prices by speaker size. Unlisted brands retain their existing pair prices.
+const SPEAKER_PAIR_PRICES={
+  '6.5"':{'Pyle':45,'Skar Audio':60,'DS18':85,'Memphis Audio':105,'JBL':115,'Infinity':115,'Scosche':50},
+  '6×9':{'Scosche':60,'Kenwood':60,'Pyle':65,'Skar Audio':75,'Pioneer':45,'Boss Audio':55,'DS18':85,'Memphis Audio':110,'Kicker':100,'JBL':115,'Infinity':130,'Rockford Fosgate':115,'Wet Sounds':650,'JL Audio':200}
 };
 
 const SUB_BRANDS_BY_SIZE={
@@ -178,7 +185,12 @@ function calculate(build){
     );
   }
 
-  total+=BRANDS[brand]*count/2;
+  const speakerSize=val(build,'size');
+  if(box!=='1800' && !['6.5"','6×9'].includes(speakerSize)){
+    throw new Error('Invalid speaker size.');
+  }
+  const pairPrice=SPEAKER_PAIR_PRICES[speakerSize]?.[brand]??BRANDS[brand];
+  total+=pairPrice*count/2;
 
   const sub=val(build,'sub')==='Yes';
   const subCount=
@@ -207,7 +219,8 @@ function calculate(build){
   if(!Object.hasOwn(POWER,power)){
     throw new Error('Invalid power selection.');
   }
-  total+=POWER[power];
+  // Big Daddy needs two power systems; other boxes need one.
+  total+=POWER[power]*(box==='9800'?2:1);
 
   const tweeterCount=Number(
     (String(val(build,'tweeters')).match(/\d+/)||['0'])[0]
