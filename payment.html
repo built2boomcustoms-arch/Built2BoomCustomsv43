@@ -164,6 +164,10 @@ Powered by PayPal. Only eligible payment methods will appear.
 <span>Build Subtotal</span>
 <span id="subtotal">$0.00</span>
 </div>
+<div class="line" id="discountLine" style="display:none">
+<span>Promo Discount (BOOMER 15%)</span>
+<span id="discount">-$0.00</span>
+</div>
 <div class="line">
 <span>Shipping</span>
 <span id="shipping">$0.00</span>
@@ -214,22 +218,37 @@ function money(n){
   return '$' + Number(n || 0).toFixed(2);
 }
 
+function promoDiscount(){
+  const sub = Number(data?.total || 0);
+  return appliedPromoCode === 'BOOMER' ? Math.round(sub * 15) / 100 : 0;
+}
+
+function displayedTotal(){
+  const sub = Number(data?.total || 0);
+  const ship = appliedPromoCode === 'KALVEN' ? 0 : shipCost();
+  return Math.round((sub - promoDiscount() + ship) * 100) / 100;
+}
+
 function updateTotals(){
   const sub = Number(data?.total || 0);
   const ship = appliedPromoCode === 'KALVEN' ? 0 : shipCost();
-
+  const discount = promoDiscount();
   document.getElementById('subtotal').textContent = money(sub);
+  document.getElementById('discountLine').style.display = discount > 0 ? 'flex' : 'none';
+  document.getElementById('discount').textContent = '-' + money(discount);
   document.getElementById('shipping').textContent =
     appliedPromoCode === 'KALVEN' ? 'FREE' : money(ship);
-  document.getElementById('total').textContent = money(sub + ship);
+  document.getElementById('total').textContent = money(displayedTotal());
 }
 
 function applyPromo(){
   const code = promoInput.value.trim().toUpperCase();
 
-  if(code === 'KALVEN'){
+  if(code === 'KALVEN' || code === 'BOOMER'){
     appliedPromoCode = code;
-    promoMessage.textContent = '✓ KALVEN applied — free shipping!';
+    promoMessage.textContent = code === 'KALVEN'
+      ? '✓ KALVEN applied — free shipping!'
+      : '✓ BOOMER applied — 15% off your speaker build!';
     promoMessage.className = 'promo-message promo-success';
   } else {
     appliedPromoCode = '';
@@ -397,8 +416,7 @@ async function createOrder(){
     throw new Error(out.error || 'Unable to create payment.');
   }
 
-  const displayed = Number(data.total || 0) +
-    (appliedPromoCode === 'KALVEN' ? 0 : shipCost());
+  const displayed = displayedTotal();
 
   if(Math.abs(Number(out.total) - displayed) > 0.01){
     throw new Error(
