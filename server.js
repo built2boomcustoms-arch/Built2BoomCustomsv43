@@ -406,6 +406,8 @@ function emailHtml(order){
 
     <p>
       <b>Subtotal:</b> $${escape(order.subtotal)}<br>
+      <b>Promo code:</b> ${escape(order.promoCode||'None')}<br>
+      <b>Discount:</b> -$${escape(Number(order.discount||0).toFixed(2))}<br>
       <b>Shipping:</b> $${escape(order.shipping)}<br>
       <b>Total paid:</b> $${escape(order.total)}
     </p>
@@ -579,15 +581,16 @@ app.post('/api/paypal/orders',async(req,res)=>{
     }
 
     const subtotal=calculate(build);
-
-    const ship=
-      String(promoCode||'')
-        .trim()
-        .toUpperCase()==='KALVEN'
-        ? 0
-        : shipping(build);
-
-    const grand=subtotal+ship;
+    const appliedPromoCode=String(promoCode||'').trim().toUpperCase();
+    if(appliedPromoCode && !['KALVEN','BOOMER'].includes(appliedPromoCode)){
+      throw new Error('Invalid promo code.');
+    }
+    // BOOMER discounts the build only, not shipping.
+    const discount=appliedPromoCode==='BOOMER'
+      ? Math.round(subtotal*15)/100
+      : 0;
+    const ship=appliedPromoCode==='KALVEN'?0:shipping(build);
+    const grand=Math.round((subtotal-discount+ship)*100)/100;
 
     const {token,base}=await accessToken();
 
@@ -637,6 +640,10 @@ app.post('/api/paypal/orders',async(req,res)=>{
               shipping:{
                 currency_code:'USD',
                 value:ship.toFixed(2)
+              },
+              discount:{
+                currency_code:'USD',
+                value:discount.toFixed(2)
               }
             }
           },
@@ -736,11 +743,10 @@ app.post('/api/paypal/orders',async(req,res)=>{
         customer,
         build,
         subtotal,
+        discount,
         shipping:ship,
         total:grand,
-        promoCode:String(promoCode||'')
-          .trim()
-          .toUpperCase(),
+        promoCode:appliedPromoCode,
         createdAt:new Date().toISOString()
       }
     );
@@ -749,6 +755,7 @@ app.post('/api/paypal/orders',async(req,res)=>{
       orderId:data.id,
       approveUrl:approve,
       subtotal,
+      discount,
       shipping:ship,
       total:grand
     });
